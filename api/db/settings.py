@@ -1,0 +1,5 @@
+user = ''
+password = ''
+cluster = ''
+database = ''
+URI = f'mongodb+srv://{user}:{password}@{cluster}.mongodb.net/{database}'
