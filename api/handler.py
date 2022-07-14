@@ -1,4 +1,6 @@
-import pandas as pd
+import datetime
+
+from bson import json_util
 from flask import Flask, request, Response
 
 from db.mongodb_engine import get_collection
@@ -7,18 +9,20 @@ from pipeline import Wallet
 # Initialize API
 app = Flask(__name__)
 
+collection_assets = get_collection('investe', 'assets')
+collection_transactions = get_collection('investe', 'transactions')
+collection_wallet = get_collection('investe', 'wallet')
+
 @app.route('/get-assets', methods = ['GET'])
 def get_assests():
-    collection = get_collection('investe', 'assets')
-    cursor = collection.find()
+    cursor = collection_assets.find()
     assets = pd.DataFrame(cursor)
     json_response = assets.drop(columns='_id').to_json(orient = 'records', date_format = 'iso')
     return json_response
 
 @app.route('/get-statement', methods = ['GET'])
 def get_statement():
-    collection = get_collection('investe', 'transactions')
-    cursor = collection.find()
+    cursor = collection_transactions.find()
     statement = pd.DataFrame(cursor)
     json_response = statement.drop(columns='_id').to_json(orient = 'records', date_format = 'iso')
     return json_response
@@ -26,8 +30,7 @@ def get_statement():
 @app.route('/consolidate-statement', methods = ['GET'])
 def consolidate_statement():
     # Get statement from DB
-    collection = get_collection('investe', 'transactions')
-    cursor = collection.find()
+    cursor = collection_transactions.find()
     statement = pd.DataFrame(cursor)
     statement.drop(columns='_id', inplace=True)
     statement['pre_split'] = statement['split_factor'].str['pre']
@@ -38,17 +41,26 @@ def consolidate_statement():
     json_response = wallet.to_json(orient = 'records', date_format = 'iso')
     return json_response
 
+datetime_options = json_util.JSONOptions(
+    datetime_representation=json_util.DatetimeRepresentation.ISO8601
+)
+
 @app.route('/load-wallet', methods = ['POST'])
 def load_wallet():
-    json = request.get_json()
-    year = json['year']
-    month = json['month']
-    collection = get_collection('investe', 'wallet')
-    query = {'year':year,'month':month}
-    cursor = collection.find(query)
-    wallet = pd.DataFrame(cursor)
-    wallet.drop(columns='_id', inplace=True)
-    json_response = wallet.to_json(orient = 'records', date_format = 'iso')
+    json_request = request.get_json()
+    if json_request['max_period']:
+        query = {}
+    else:
+        year = json_request['year']
+        month = json_request['month']
+        query = {'date':{
+            '$gte':datetime.datetime(year,month,1)
+        }}
+    cursor = collection_wallet.find(query, projection={'_id':0})
+    json_response = json_util.dumps(
+        list(cursor),
+        json_options=datetime_options
+    )
     return json_response
 
 if __name__ == '__main__':
