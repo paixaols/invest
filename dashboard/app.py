@@ -12,26 +12,34 @@ from matplotlib import cm
 from matplotlib.dates import DateFormatter, MonthLocator
 
 # @st.cache
-def load_wallet():
+def load_wallet(start_date):
     url = 'http://127.0.0.1:5000/load-wallet'
-    data = {'year':2022, 'month':6}
+    if start_date == 'all':
+        data = {'max_period':True}
+    else:
+        data = {'max_period':False,
+                'year':start_date.year,
+                'month':start_date.month}
     data = json.dumps(data)
     header = {'Content-type': 'application/json'}
     r = requests.post(url, data=data, headers=header)
-
+    
     df = pd.DataFrame(r.json(), columns = r.json()[0].keys())
-    year = df.loc[0, 'year']
-    month = df.loc[0, 'month']
-    w = df.loc[0, 'wallet']
-    w = pd.DataFrame(w)
-    # Exchange rate
-    w['value_brl'] = w['value']*w['currency_rate']
-    # Wallet date
-    w['month'] = f'{year}-{month}'
-    w['month_datetime'] = w['month'].apply(lambda x: pd.to_datetime(x, format = '%Y-%m'))
-    # Make expire naive datetime objects
-    w['expire'] = w['expire'].apply(lambda x: pd.to_datetime(x.split('T')[0]))
-    return w
+    # Date column contains dicts in the format {'$date': <str of aware dt>}
+    df['date'] = df['date'].apply(lambda x: pd.to_datetime(x['$date'].split('T')[0]))
+    
+    wallet = pd.DataFrame()
+    for i in range(len(df)):
+        w = pd.DataFrame(df.loc[i, 'wallet'])
+        # Value
+        w['value_brl'] = w['value']*w['currency_rate']
+        # Wallet date
+        w['date'] = df.loc[i, 'date']
+        # Make expire naive datetime objects
+        w['expire'] = w['expire'].apply(lambda x: pd.to_datetime(x.split('T')[0]))
+        wallet = pd.concat([wallet, w])
+    wallet.reset_index(drop=True, inplace=True)
+    return wallet
 
 # =============================================================================
 # Settings
@@ -87,23 +95,11 @@ def barplot(x, y, ax, palette = 'winter_r', rotation = 0, align = 'center', ylab
 # Dashboard panels
 # =============================================================================
 def general_view(df):
-    # Filter time window
-    time_window = st.sidebar.radio('Período', ['12 meses', 'No ano', 'Máx'])
-    now = datetime.datetime.now()
-    y = now.year
-    if time_window == 'No ano':
-        start_date = datetime.datetime(year=y, month=1, day=1)
-        df = df.loc[df['month_datetime'] >= start_date]
-    if time_window == '12 meses':
-        y -= 1
-        start_date = datetime.datetime(year=y, month=now.month, day=1)
-        df = df.loc[df['month_datetime'] >= start_date]
-    
     st.header('Visão geral')
     st.subheader('Histórico')
     
     # Change
-    aux = df[['month_datetime', 'value_brl']].groupby('month_datetime').sum().reset_index()
+    aux = df[['date', 'value_brl']].groupby('date').sum().reset_index()
     initial = aux.iloc[0, 1]
     final = aux.iloc[-1, 1]
     change_percent = 100 * (final-initial) / initial
@@ -115,8 +111,8 @@ def general_view(df):
     colors = get_sns_colors(main_palette, 2)
     
     fig, axs = plt.subplots(ncols = 2, figsize = (10, 3))
-    axs[0].plot(aux['month_datetime'], aux['value_brl']/1000, '-o', color = colors[0])
-    axs[0].fill_between(aux['month_datetime'], aux['value_brl']/1000, 
+    axs[0].plot(aux['date'], aux['value_brl']/1000, '-o', color = colors[0])
+    axs[0].fill_between(aux['date'], aux['value_brl']/1000, 
                         y2 = aux['value_brl'].min()/1000, 
                         alpha = 0.5, color = colors[1])
     axs[0].xaxis.set_major_locator(MonthLocator())
@@ -126,8 +122,8 @@ def general_view(df):
     axs[0].set_ylabel('R$ mil')
     
     # Stackplot
-    aux = df[['month_datetime', 'value_brl', 'class']].groupby(['month_datetime', 'class']).sum().reset_index()
-    aux2 = aux.pivot(index='month_datetime', columns='class', values = 'value_brl')
+    aux = df[['date', 'value_brl', 'class']].groupby(['date', 'class']).sum().reset_index()
+    aux2 = aux.pivot(index='date', columns='class', values = 'value_brl')
     aux2 = aux2.apply(lambda x: 100*x/sum(x), axis=1)
     
     aux2.plot(kind='area', stacked=True,
@@ -148,7 +144,7 @@ def general_view(df):
     fig, axs = plt.subplots(ncols = 2, figsize = (10, 3))
     
     # Current month - by location
-    df = df.loc[df['month_datetime'] == df['month_datetime'].max()]
+    df = df.loc[df['date'] == df['date'].max()]
     aux = df[['market', 'value_brl']].groupby('market').sum().reset_index()
     aux.sort_values('value_brl', ascending=False, inplace=True)
     barplot(aux['market'], aux['value_brl']/1000, axs[0], palette = main_palette, 
@@ -214,59 +210,59 @@ def view_rv(df):
     
     # Class overview
     st.subheader('Visão geral')
-    df_current = df.loc[df['mês_datetime'] == df['mês_datetime'].max()]
+    df_current = df.loc[df['date'] == df['date'].max()]
     fig, axs = plt.subplots(ncols = 2, figsize = (10, 3))
     
-    aux = df_current[['valor_real', 'tipo']].groupby('tipo').sum().reset_index()
-    aux.sort_values('valor_real', ascending=False, inplace=True)
-    pieplot(aux['valor_real'], aux['tipo'], axs[0], palette=main_palette)
-    barplot(aux['tipo'], aux['valor_real']/1000, axs[1], palette=main_palette, 
+    aux = df_current[['value_brl', 'type']].groupby('type').sum().reset_index()
+    aux.sort_values('value_brl', ascending=False, inplace=True)
+    pieplot(aux['value_brl'], aux['type'], axs[0], palette=main_palette)
+    barplot(aux['type'], aux['value_brl']/1000, axs[1], palette=main_palette, 
             rotation=0, align='center', ylabel='R$ mil', y2=True)
     
     st.pyplot(fig)
     
     # Individual asset type
-    type_list = df_current['tipo'].unique()
+    type_list = df_current['type'].unique()
     asset_type = st.sidebar.radio('Categorias', type_list)
-    df_current = df_current.loc[df_current['tipo'] == asset_type]
-    currency_code = df_current['moeda'].iloc[0]
+    df_current = df_current.loc[df_current['type'] == asset_type]
+    currency_code = df_current['currency'].iloc[0]
     
     # Type overview
     st.subheader(asset_type)
     
     # Change
-    aux = df_current[df_current['tipo'] == asset_type]
-    initial = aux['custo'].sum()
-    final = aux['valor'].sum()
+    aux = df_current[df_current['type'] == asset_type]
+    initial = aux['cost'].sum()
+    final = aux['value'].sum()
     change_percent = 100 * (final-initial) / initial
     st.metric('Custo: {:,.2f} {}'.format(initial, currency_code), 
               '{:,.2f} {}'.format(final, currency_code), 
               '{:.1f}%'.format(change_percent))
     
     # Table and plot
-    aux = df_current[['ativo', 'custo', 'valor']].groupby('ativo').sum().reset_index()
-    aux['var%'] = aux.apply(lambda x: 100*(x['valor']/x['custo']-1), axis=1)
+    aux = df_current[['asset_name', 'cost', 'value']].groupby('asset_name').sum().reset_index()
+    aux['var%'] = aux.apply(lambda x: 100*(x['value']/x['cost']-1), axis=1)
     
     c1, c2 = st.columns(2)
     aux.sort_values('var%', ascending=False, inplace=True)
-    c1.write(aux.style.format(formatter = {('custo'): '{:,.2f}', 
-                                           ('valor'): '{:,.2f}', 
+    c1.write(aux.style.format(formatter = {('cost'): '{:,.2f}', 
+                                           ('value'): '{:,.2f}', 
                                            ('var%'): '{:,.1f}%'}))
     fig, ax = plt.subplots(figsize = (5, 4))
-    aux.sort_values('valor', ascending=False, inplace=True)
-    barplot(aux['ativo'], aux['valor']/1000, ax, palette=main_palette, 
+    aux.sort_values('value', ascending=False, inplace=True)
+    barplot(aux['asset_name'], aux['value']/1000, ax, palette=main_palette, 
             rotation=30, align='center', ylabel='Mil '+currency_code, y2=True)
     c2.pyplot(fig)
     
     # Individual asset
-    asset_list = df_current['ativo'].unique()
+    asset_list = df_current['asset_name'].unique()
     asset_list.sort()
     asset = st.sidebar.radio('Ativos', asset_list)
     st.subheader(asset)
     
-    df = df.loc[df['ativo'] == asset].groupby('mês_datetime').sum().reset_index()
-    current_qnt = df.loc[df['mês_datetime'] == df['mês_datetime'].max(), 'qnt'].iloc[0]
-    current_cost = df.loc[df['mês_datetime'] == df['mês_datetime'].max(), 'custo'].iloc[0]
+    df = df.loc[df['asset_name'] == asset].groupby('date').sum().reset_index()
+    current_qnt = df.loc[df['date'] == df['date'].max(), 'quantity'].iloc[0]
+    current_cost = df.loc[df['date'] == df['date'].max(), 'cost'].iloc[0]
     avg_cost = current_cost/current_qnt
     st.write('Custo médio: {:,.2f} {}'.format(avg_cost, currency_code))
     
@@ -275,17 +271,17 @@ def view_rv(df):
     axs[1].set_title('Cotação')
     colors = get_sns_colors(main_palette, 2)
     
-    axs[0].plot(df['mês_datetime'], df['valor']/1000, '-o', color = colors[0])
-    axs[0].fill_between(df['mês_datetime'], df['valor']/1000, 
-                        y2 = df['valor'].min()/1000, 
+    axs[0].plot(df['date'], df['value']/1000, '-o', color = colors[0])
+    axs[0].fill_between(df['date'], df['value']/1000, 
+                        y2 = df['value'].min()/1000, 
                         alpha = 0.5, color = colors[1])
     plt.setp(axs[0].get_xticklabels(), rotation = 30)#, horizontalalignment='right')
     plt.setp(axs[0].get_xticklabels(), rotation = 30)#, horizontalalignment='right')
     axs[0].set_ylabel('Mil '+currency_code)
     
-    axs[1].plot(df['mês_datetime'], df['cotação'], '-o', color = colors[0])
-    axs[1].fill_between(df['mês_datetime'], df['cotação'], 
-                        y2 = min(df['cotação'].min(), avg_cost), 
+    axs[1].plot(df['date'], df['price'], '-o', color = colors[0])
+    axs[1].fill_between(df['date'], df['price'], 
+                        y2 = min(df['price'].min(), avg_cost), 
                         alpha = 0.5, color = colors[1])
     axs[1].axhline(avg_cost, ls='--', color=colors[0])
     plt.setp(axs[1].get_xticklabels(), rotation = 30)#, horizontalalignment='right')
@@ -385,7 +381,16 @@ def view_cripto(df):
 # =============================================================================
 # Main page
 # =============================================================================
-df = load_wallet()
+# Filter time window
+time_window = st.sidebar.radio('Período', ['12 meses', 'No ano', 'Máx'])
+now = datetime.datetime.now()
+if time_window == 'No ano':
+    start_date = datetime.datetime(year=now.year, month=1, day=1)
+elif time_window == '12 meses':
+    start_date = datetime.datetime(year=now.year-1, month=now.month, day=1)
+else:
+    start_date = 'all'
+df = load_wallet(start_date)
 
 # Filter class
 wallet_classes = df['class'].unique()
@@ -411,7 +416,7 @@ if page == 'Visão geral':
     general_view(df)
 # elif page == 'Renda fixa':
 #     view_rf(df)
-# elif page == 'Renda variável':
-#     view_rv(df)
+elif page == 'Renda variável':
+    view_rv(df)
 # elif page == 'Cripto':
 #     view_cripto(df)
