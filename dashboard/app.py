@@ -163,13 +163,13 @@ def view_rf(df):
     
     # Class overview
     st.subheader('Visão geral')
-    df_current = df.loc[df['mês_datetime'] == df['mês_datetime'].max()]
+    df_current = df.loc[df['date'] == df['date'].max()]
     fig, axs = plt.subplots(ncols = 2, figsize = (10, 3))
     
-    aux = df_current[['valor_real', 'tipo']].groupby('tipo').sum().reset_index()
-    aux.sort_values('valor_real', ascending=False, inplace=True)
-    pieplot(aux['valor_real'], aux['tipo'], axs[0], palette=main_palette)
-    barplot(aux['tipo'], aux['valor_real']/1000, axs[1], palette=main_palette, 
+    aux = df_current[['value_brl', 'type']].groupby('type').sum().reset_index()
+    aux.sort_values('value_brl', ascending=False, inplace=True)
+    pieplot(aux['value_brl'], aux['type'], axs[0], palette=main_palette)
+    barplot(aux['type'], aux['value_brl']/1000, axs[1], palette=main_palette, 
             rotation=30, align='center', ylabel='R$ mil', y2=True)
     
     st.pyplot(fig)
@@ -177,29 +177,30 @@ def view_rf(df):
     # Vencimento
     st.subheader('Datas de vencimento')
     
-    aux1 = df_current.groupby(['tipo', 'vencimento']).sum().reset_index()
-    aux1['vencimento'] = aux1['vencimento'].apply(lambda x: x.year)
-    aux1 = aux1[['tipo', 'vencimento', 'valor_real']].groupby(['tipo', 'vencimento']).sum().reset_index()
-    aux1.sort_values('valor_real', inplace = True, ascending = False)
+    aux1 = df_current.groupby(['type', 'expire']).sum().reset_index()
+    aux1['expire'] = aux1['expire'].apply(lambda x: x.year)
+    aux1 = aux1[['type', 'expire', 'value_brl']].groupby(['type', 'expire']).sum().reset_index()
+    aux1.sort_values('value_brl', inplace = True, ascending = False)
+    aux1 = aux1[aux1['expire'] < 2200]
     
     # Fill empty years
-    yr_range = list(range(aux1['vencimento'].min(), aux1['vencimento'].max()))
-    fill_vencimento = np.setdiff1d(yr_range, aux1['vencimento'].to_list())
-    aux1 = aux1.append(pd.DataFrame({'tipo': ['IPCA']*len(fill_vencimento), 
-                                     'vencimento': fill_vencimento, 
-                                     'valor': [0]*len(fill_vencimento)}))
+    yr_range = list(range(aux1['expire'].min(), aux1['expire'].max()))
+    fill_vencimento = np.setdiff1d(yr_range, aux1['expire'].to_list())
+    aux1 = aux1.append(pd.DataFrame({'type': ['IPCA']*len(fill_vencimento), 
+                                     'expire': fill_vencimento, 
+                                     'value': [0]*len(fill_vencimento)}))
     
-    aux2 = aux1.groupby('vencimento').sum().reset_index()
-    new_index = pd.Index(range(aux2['vencimento'].min(), aux2['vencimento'].max()+1), name = 'vencimento')
-    aux2 = aux2.set_index('vencimento').reindex(new_index).reset_index()
-    aux2['valor_real'].fillna(0, inplace = True)
+    aux2 = aux1.groupby('expire').sum().reset_index()
+    new_index = pd.Index(range(aux2['expire'].min(), aux2['expire'].max()+1), name = 'expire')
+    aux2 = aux2.set_index('expire').reindex(new_index).reset_index()
+    aux2['value_brl'].fillna(0, inplace = True)
     
     # Plot
     fig, ax = plt.subplots(figsize = (10, 3))
-    barplot(aux2['vencimento'], aux2['valor_real']/1000, ax, 
+    barplot(aux2['expire'], aux2['value_brl']/1000, ax, 
             palette = main_palette, alpha = 0.2, rotation = 45)
-    sns.barplot(x = aux1['vencimento'], y = aux1['valor_real']/1000, data = aux1, 
-                ax = ax, hue = 'tipo', palette = main_palette)
+    sns.barplot(x = aux1['expire'], y = aux1['value_brl']/1000, data = aux1, 
+                ax = ax, hue = 'type', palette = main_palette)
     ax.set_ylabel('BRL mil')
     ax.legend(loc = 'upper right')
     st.pyplot(fig)
@@ -413,8 +414,8 @@ df = df.loc[df['market'].isin(locations)]
 
 if page == 'Visão geral':
     general_view(df)
-# elif page == 'Renda fixa':
-#     view_rf(df)
+elif page == 'Renda fixa':
+    view_rf(df)
 elif page == 'Renda variável':
     view_rv(df)
 elif page == 'Cripto':
