@@ -47,15 +47,15 @@ datetime_options = json_util.JSONOptions(
 
 @app.route('/load-wallet', methods = ['POST'])
 def load_wallet():
-    json_request = request.get_json()
-    if json_request['max_period']:
-        query = {}
-    else:
-        year = json_request['year']
-        month = json_request['month']
+    filters = request.get_json()
+    if 'year' in filters:
+        year = filters['year']
+        month = filters['month']
         query = {'date':{
             '$gte':datetime.datetime(year,month,1)
         }}
+    else:
+        query = {}
     cursor = collection_wallet.find(query, projection={'_id':0})
     json_response = json_util.dumps(
         list(cursor),
