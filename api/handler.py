@@ -1,6 +1,6 @@
 import datetime
+import pandas as pd
 
-from bson import json_util
 from flask import Flask, request, Response
 
 from db.mongodb_engine import get_collection
@@ -41,10 +41,6 @@ def consolidate_statement():
     json_response = wallet.to_json(orient = 'records', date_format = 'iso')
     return json_response
 
-datetime_options = json_util.JSONOptions(
-    datetime_representation=json_util.DatetimeRepresentation.ISO8601
-)
-
 @app.route('/load-wallet', methods = ['POST'])
 def load_wallet():
     filters = request.get_json()
@@ -57,10 +53,8 @@ def load_wallet():
     else:
         query = {}
     cursor = collection_wallet.find(query, projection={'_id':0})
-    json_response = json_util.dumps(
-        list(cursor),
-        json_options=datetime_options
-    )
+    df = pd.DataFrame(cursor)
+    json_response = df.to_json(orient = 'records', date_format = 'iso')
     return json_response
 
 if __name__ == '__main__':

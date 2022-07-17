@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import datetime
 import json
 import matplotlib.pyplot as plt
@@ -11,9 +10,11 @@ import streamlit as st
 from matplotlib import cm
 from matplotlib.dates import DateFormatter, MonthLocator
 
+api_url = 'http://127.0.0.1:5000'
+
 # @st.cache
 def load_wallet(start_date):
-    url = 'http://127.0.0.1:5000/load-wallet'
+    url = api_url+'/load-wallet'
     if start_date == 'all':
         data = {}
     else:
@@ -24,8 +25,8 @@ def load_wallet(start_date):
     r = requests.post(url, data=data, headers=header)
     
     df = pd.DataFrame(r.json(), columns = r.json()[0].keys())
-    # Date column contains dicts in the format {'$date': <str of aware dt>}
-    df['date'] = df['date'].apply(lambda x: pd.to_datetime(x['$date'].split('T')[0]))
+    # Make date naive datetime objects
+    df['date'] = df['date'].apply(lambda x: pd.to_datetime(x.split('T')[0]))
     
     wallet = pd.DataFrame()
     for i in range(len(df)):
