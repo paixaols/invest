@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Invest{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+</head>
+<body>
+    <main>
+        <div class="container py-4">
+            <header class="pb-3 mb-4 border-bottom">
+                <a href="/" class="d-flex align-items-center text-dark text-decoration-none">
+                    <span class="fs-4">Invest</span>
+                </a>
+                <nav>
+                    <ul class="nav nav-pills pull-right">
+                        {% if current_user.is_authenticated %}
+                            <li role="presentation">
+                                <a href="{{ url_for('auth.logout') }}">Sair</a>
+                            </li>
+                        {% else %}
+                            <li role="presentation">
+                                <a href="{{ url_for('auth.login') }}">Entrar</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </header>
+
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="alert alert-warning">
+                        <ul class=flashes>
+                        {% for message in messages %}
+                            <li>{{ message }}</li>
+                        {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            {% block content %}
+            {% endblock %}
+
+            <footer class="pt-3 mt-4 text-muted border-top">
+                &copy; 2022
+            </footer>
+        </div>
+    </main>
+
+    <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+</body>
+</html>
