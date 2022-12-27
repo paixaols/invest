@@ -1,3 +1,5 @@
+import datetime
+
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import login_required, login_user, logout_user
 from werkzeug.security import check_password_hash
@@ -29,7 +31,8 @@ def register():
 
         if error is None:
             try:
-                user = User(name, email, password)
+                now = datetime.datetime.now()
+                user = User(name, email, password, now, now)
                 db.session.add(user)
                 db.session.commit()
             except:
