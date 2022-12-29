@@ -1,1 +1,11 @@
-{% extends 'base.html' %}
+{% extends 'restricted/restricted-base.html' %}
+
+
+{% block sidebar %}
+<h4>Sidebar</h4>
+{% endblock %}
+
+
+{% block restricted_content %}
+<h1 class="border-bottom">Painel</h1>
+{% endblock %}

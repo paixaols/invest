@@ -8,35 +8,45 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
 </head>
 <body>
-    <main>
-        <div class="container py-4">
-            <header class="pb-3 mb-4 border-bottom">
-                <a href="/" class="d-flex align-items-center text-dark text-decoration-none">
-                    <span class="fs-4">Invest</span>
-                </a>
-                <nav>
-                    <ul class="nav nav-pills pull-right">
-                        {% if current_user.is_authenticated %}
-                            <li role="presentation">
-                                <a href="{{ url_for('auth.logout') }}">Sair</a>
-                            </li>
-                        {% else %}
-                            <li role="presentation">
-                                <a href="{{ url_for('auth.login') }}">Entrar</a>
-                            </li>
-                        {% endif %}
-                    </ul>
-                </nav>
-            </header>
-
-            {% block content %}
-            {% endblock %}
-
-            <footer class="pt-3 mt-4 text-muted border-top">
-                &copy; 2022
-            </footer>
+    <!-- Header -->
+    <nav class="navbar navbar-expand-lg sticky-top navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Invest</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-toggler" aria-controls="navbar-toggler" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbar-toggler">
+                <ul class="navbar-nav ms-auto flex-nowrap">
+                    {% if current_user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('restricted.home') }}">Painel</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('auth.logout') }}">Sair</a>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('auth.login') }}">Entrar</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('auth.register') }}">Registrar-se</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
         </div>
-    </main>
+    </nav>
+
+    <!-- Page content -->
+    <section>
+        {% block content %}
+        {% endblock %}
+    </section>
+
+    <!-- Footer -->
+    <footer class="container pt-3 mt-4 text-muted border-top">
+        &copy; 2022 - 2023
+    </footer>
 
     <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
 </body>
