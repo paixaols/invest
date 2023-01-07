@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+<div class="container-fluid">
+    <div class="row">
+
+        <!-- Sidebar -->
+        <div class="col-sm-3 col-md-2 sidebar bg-light">
+            {% block sidebar %}
+            {% endblock %}
+            <ul>
+                <li>
+                    <a href="{{ url_for('restricted.home') }}">Painel</a>
+                </li>
+                <li>
+                    <a href="{{ url_for('restricted.assets') }}">Investimentos</a>
+                </li>
+                {% if current_user.persona == 'admin' %}
+                <li>
+                    <a href="{{ url_for('admin.assets') }}">Ativos</a>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+
+        <!-- Main content -->
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+            {% block restricted_content %}
+            {% endblock %}
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

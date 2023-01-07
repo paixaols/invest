@@ -1,0 +1,87 @@
+{% extends 'base-restricted.html' %}
+
+
+{% block sidebar %}
+{% endblock %}
+
+
+{% block restricted_content %}
+
+<h1 class="border-bottom">Meus investimentos</h1>
+
+<button type="button" class="btn btn-outline-dark btn-sm" data-bs-toggle="modal" data-bs-target="#new-asset-modal">+</button>
+
+<!-- Assets list -->
+<div>
+    {% for asset in wallet %}
+    <div class="card">
+        <a class="stretched-link" href="" data-bs-toggle="modal" data-bs-target="#new-asset-modal"></a>
+        <div class="card-body">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-4">
+                        <p>{{ asset.get('name') }}</p>
+                        <p>Quantidade: {{ asset.get('qnt') }}</p>
+                    </div>
+                    <div class="col-md-4">
+                        <p>{{ asset.get('type') }}</p>
+                        <p>Valor: R$ {{ asset.get('value') }}</p>
+                    </div>
+                    <div class="col-md-4">
+                        <p>{{ asset.get('class') }} - {{ asset.get('market') }}</p>
+                        <p>Vencimento: {{ asset.get('expiration').strftime('%d/%m/%Y') }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="new-asset-modal" data-bs-keyboard="true" tabindex="-1" aria-labelledby="ModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title" id="ModalLabel">Novo ativo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <form action="" method="POST">
+                    {{ form.csrf_token }}
+                    <div class="form-group">
+                        <label>Nome</label>
+                        {{ form.name(class='form-control', placeholder='Nome') }}
+                    </div>
+                    <div class="form-group">
+                        <label>Descrição</label>
+                        {{ form.description(class='form-control', placeholder='Descrição') }}
+                    </div>
+                    <div class="form-group">
+                        <label>Local</label>
+                        {{ form.market(class='form-control', placeholder='Local') }}
+                    </div>
+                    <div class="form-group">
+                        <label>Tipo de investimento</label>
+                        {{ form.asset_type(class='form-control', placeholder='Tipo') }}
+                    </div>
+                    <div class="form-group">
+                        <label>Grupo de ativos</label>
+                        {{ form.asset_group(class='form-control', placeholder='Grupo') }}
+                    </div>
+                    <div class="form-group">
+                        <label>Validade</label>
+                        {{ form.expiration_date(class='form-control', placeholder='dd/mm/aaaa') }}
+                    </div>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

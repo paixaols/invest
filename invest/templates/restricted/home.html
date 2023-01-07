@@ -1,11 +1,86 @@
-{% extends 'restricted/restricted-base.html' %}
+{% extends 'base-restricted.html' %}
 
 
 {% block sidebar %}
-<h4>Sidebar</h4>
 {% endblock %}
 
 
 {% block restricted_content %}
-<h1 class="border-bottom">Painel</h1>
+
+<!-- Nav tabs -->
+<ul class="nav nav-tabs" id="myTab" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home-tab-pane" type="button" role="tab" aria-controls="home-tab-pane" aria-selected="true">Visão geral</button>
+    </li>
+    <!-- <li class="nav-item" role="presentation">
+        <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile-tab-pane" type="button" role="tab" aria-controls="profile-tab-pane" aria-selected="false">Profile</button>
+    </li> -->
+</ul>
+
+<!-- Tab content -->
+<div class="tab-content" id="myTabContent">
+    <!-- Visão geral -->
+    <div class="tab-pane fade show active" id="home-tab-pane" role="tabpanel" aria-labelledby="home-tab" tabindex="0">
+
+        <!-- Meu patrimônio -->
+        <h2 class="border-bottom">Meu patrimônio</h2>
+        <div class="container-fluid">
+            <div class="row">
+
+                <div class="col-md-6 table-responsive table-fix-head" style="max-height: 400px;">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Ativo</th>
+                                <th>Local</th>
+                                <th>Classe</th>
+                                <th>Quantidade</th>
+                                <th>Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody id="assets-table-body"></tbody>
+                    </table>
+                </div>
+
+                <div class="col-md-6">
+                    <p>Gráfico pizza</p>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Meus investimentos -->
+        <h2 class="border-bottom">Meus investimentos</h2>
+        <div class="container-fluid">
+            <div class="row">
+
+                <div class="col-md-6 table-responsive table-fix-head" style="max-height: 400px;">
+                    <table class="table table-striped">
+                        <tbody>
+                            <tr>
+                                <td>-</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="col-md-6">
+                    <p>Gráfico barra</p>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Evolução patrimonial -->
+        <h2 class="border-bottom">Evolução patrimonial</h2>
+
+    </div>
+
+    <!--  -->
+    <!-- <div class="tab-pane fade" id="profile-tab-pane" role="tabpanel" aria-labelledby="profile-tab" tabindex="0">
+        <h2>Profile</h2>
+    </div> -->
+</div>
+
 {% endblock %}
