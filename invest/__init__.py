@@ -1,5 +1,6 @@
 import os
 
+# from datetime import datetime
 from flask import Flask, render_template
 from flask_login import LoginManager
 from flask_migrate import Migrate
@@ -41,19 +42,21 @@ def create_app():
         return render_template('index.html')
 
     # Register blueprints.
-    from invest.controllers import auth, restricted
+    from invest.controllers import admin, auth, restricted
+    app.register_blueprint(admin.bp)
     app.register_blueprint(auth.bp)
     app.register_blueprint(restricted.bp)
 
     # Setup shell.
-    from invest.models.tables import User
+    from invest.models.tables import Asset, User
 
     @app.shell_context_processor
     def make_shell():
         return dict(
             app=app,
             db=db,
-            User=User
+            User=User,
+            Asset=Asset
         )
 
     return app

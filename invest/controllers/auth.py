@@ -51,7 +51,6 @@ def login():
         user = User.query.filter_by(email=form.email.data).first()
         if user and check_password_hash(user.pw_hash, form.password.data):
             login_user(user)
-            flash('Logged in successfully.')
 
             # TODO: 
             # next = request.args.get('next')
