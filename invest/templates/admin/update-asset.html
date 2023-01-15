@@ -39,16 +39,6 @@
     <a href="{{ url_for('admin.delete_asset', id=asset_id) }}" class="btn btn-outline-danger">Excluir</a>
 </form>
 
-<script>
-    function checkboxAction(){
-        var checkbox = document.getElementById('myCheck')
-        var text = document.getElementById('myInput')
-        if(checkbox.checked == true){
-            text.disabled = true
-        } else {
-            text.disabled = false
-        }
-    }
-</script>
+<script src="{{ url_for('static', filename='js/expiration_checkbox.js') }}"></script>
 
 {% endblock %}

@@ -93,23 +93,13 @@
     </div>
 </div>
 
-<script>
-    function checkboxAction(){
-        var checkbox = document.getElementById('myCheck')
-        var text = document.getElementById('myInput')
-        if(checkbox.checked == true){
-            text.disabled = true
-        } else {
-            text.disabled = false
-        }
-    }
-</script>
+<script src="{{ url_for('static', filename='js/expiration_checkbox.js') }}"></script>
 
 <!-- Assets list -->
 <div>
     {% for asset in assets %}
     <div class="card">
-        <a class="stretched-link" href="{{ url_for('admin.update_asset', id=asset.asset_id) }}"></a>
+        <a class="stretched-link" href="{{ url_for('admin.update_asset', id=asset.id) }}"></a>
         <div class="card-body">
             <div class="container-fluid">
                 <div class="row">

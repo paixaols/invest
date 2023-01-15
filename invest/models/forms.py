@@ -1,5 +1,7 @@
 from flask_wtf import FlaskForm
-from wtforms import BooleanField, DateTimeField, StringField, PasswordField
+from wtforms import (
+    BooleanField, DateTimeField, SelectField, StringField, PasswordField
+)
 from wtforms.validators import InputRequired, ValidationError
 
 
@@ -34,3 +36,14 @@ class AssetForm(FlaskForm):
         validators=[datetime_validator]
     )
     unexpirable = BooleanField('unexpirable')
+
+
+class WalletEntryForm(FlaskForm):
+    market = SelectField('market')
+    asset_type = SelectField('asset_type')
+    asset_group = SelectField('asset_group')
+    asset = SelectField('asset')
+    # quantity = DecimalField() FloatField()
+    # institution
+    # cost
+    # value

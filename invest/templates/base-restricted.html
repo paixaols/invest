@@ -17,7 +17,7 @@
                 <li>
                     <a href="{{ url_for('restricted.assets') }}">Investimentos</a>
                 </li>
-                {% if current_user.persona == 'admin' %}
+                {% if current_user.role == 'admin' %}
                 <li>
                     <a href="{{ url_for('admin.assets') }}">Ativos</a>
                 </li>

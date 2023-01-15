@@ -12,7 +12,7 @@ from invest.models.tables import Asset
 def admin_access(view):
     @functools.wraps(view)
     def wrapped_view(**kwargs):
-        if current_user.persona != 'admin':
+        if current_user.role != 'admin':
             return '<h1>Unauthorized</h1><p>Admin privilege is required.</p>'
         return view(**kwargs)
     return wrapped_view
@@ -52,7 +52,7 @@ def update_asset():
     asset_id = request.args.get('id')
     asset = Asset.query.get_or_404(
         int(asset_id),
-        description='There is no data with id: {}'.format(asset_id)
+        description=f'There is no data with id: {asset_id}'
     )
     expiration_date = asset.asset_expiration_date
 
@@ -102,7 +102,7 @@ def delete_asset():
     asset_id = request.args.get('id')
     asset = Asset.query.get_or_404(
         int(asset_id),
-        description='There is no data with id: {}'.format(asset_id)
+        description=f'There is no data with id: {asset_id}'
     )
     db.session.delete(asset)
     db.session.commit()
