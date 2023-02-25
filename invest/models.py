@@ -11,13 +11,29 @@ class Currency(models.Model):
     name = models.CharField('Nome', max_length=10)
     code = models.CharField('Código', max_length=10)
 
+    def __str__(self):
+        return self.name
+
+
+class Market(models.Model):
+
+    class Meta:
+        verbose_name = 'Local'
+        verbose_name_plural = 'Locais'
+
+    name = models.CharField('Local', max_length=50)
+
+    def __str__(self):
+        return self.name
+
 
 class Asset(models.Model):
 
     class Meta:
         verbose_name = 'Ativo'
 
-    currency = models.ForeignKey(Currency, on_delete=models.CASCADE)
+    # currency = models.ForeignKey(Currency, on_delete=models.CASCADE)
+    currency = models.CharField('Moeda', max_length=10)
     name = models.CharField('Nome do ativo', max_length=50)
     description = models.CharField('Descrição', max_length=100)
     market = models.CharField('Mercado', max_length=50)
