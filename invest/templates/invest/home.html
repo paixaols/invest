@@ -1,0 +1,88 @@
+{% extends 'invest/base_logged.html' %}
+
+
+{% block logged_content %}
+
+<!-- Nav tabs -->
+<ul class="nav nav-tabs" id="myTab" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home-tab-pane" type="button" role="tab" aria-controls="home-tab-pane" aria-selected="true">Visão geral</button>
+    </li>
+    <!-- <li class="nav-item" role="presentation">
+        <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile-tab-pane" type="button" role="tab" aria-controls="profile-tab-pane" aria-selected="false">Profile</button>
+    </li> -->
+</ul>
+
+<!-- Tab content -->
+<div class="tab-content" id="myTabContent">
+    <!-- Visão geral -->
+    <div class="tab-pane fade show active" id="home-tab-pane" role="tabpanel" aria-labelledby="home-tab" tabindex="0">
+
+        <!-- Meu patrimônio -->
+        <h2 class="border-bottom">Meu patrimônio</h2>
+        <p class="text-muted">Última atualização em {{ last_updated }}.</p>
+        <div class="container-fluid">
+            {% if market_agg_table %}
+                <div class="row">
+
+                    <div class="col-md-6 table-responsive table-fix-head" style="max-height: 400px;">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Local</th><th>Custo</th><th>Valor</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in market_agg_table %}
+                                    <tr>
+                                        <td>{{ row.market }}</td>
+                                        <td>{{ row.cost }}</td>
+                                        <td>{{ row.value }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- <div class="col-md-6">
+                        <p>Gráfico pizza</p>
+                    </div> -->
+
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Meus investimentos -->
+        <h2 class="border-bottom">Meus investimentos</h2>
+        <div class="container-fluid">
+            <div class="row">
+
+                <div class="col-md-6 table-responsive table-fix-head" style="max-height: 400px;">
+                    <table class="table table-striped">
+                        <tbody>
+                            <tr>
+                                <td>-</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="col-md-6">
+                    <p>Gráfico barra</p>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Evolução patrimonial -->
+        <h2 class="border-bottom">Evolução patrimonial</h2>
+
+    </div>
+
+    <!--  -->
+    <!-- <div class="tab-pane fade" id="profile-tab-pane" role="tabpanel" aria-labelledby="profile-tab" tabindex="0">
+        <h2>Profile</h2>
+    </div> -->
+</div>
+
+{% endblock %}

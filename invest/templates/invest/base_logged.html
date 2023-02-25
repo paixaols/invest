@@ -1,0 +1,32 @@
+{% extends 'invest/base.html' %}
+
+
+{% block content %}
+
+<div class="container-fluid">
+    <div class="row">
+
+        <!-- Sidebar -->
+        <div class="col-sm-3 col-md-2 sidebar bg-light">
+            {% block sidebar %}
+            {% endblock %}
+            <ul>
+                <li>
+                    <a href="{% url 'invest:home' %}">Painel</a>
+                </li>
+                <li>
+                    <a href="">Investimentos</a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Main content -->
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+            {% block logged_content %}
+            {% endblock %}
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

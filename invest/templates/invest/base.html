@@ -1,0 +1,59 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Invest{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'invest/bootstrap/bootstrap.min.css' %}">
+</head>
+<body>
+    <!-- Header -->
+    <nav class="navbar navbar-expand-lg sticky-top navbar-dark bg-dark">
+        <div class="container-fluid">
+            {% if user.is_authenticated %}
+                <a class="navbar-brand" href="{% url 'invest:home' %}">Invest</a>
+            {% else %}
+                <a class="navbar-brand" href="{% url 'invest:index' %}">Invest</a>
+            {% endif %}
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-toggler" aria-controls="navbar-toggler" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbar-toggler">
+                <ul class="navbar-nav ms-auto flex-nowrap">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item ">
+                            <a class="nav-link" href="">Bem-vindo(a) {{ user.first_name }}</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'logout' %}">Sair</a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'cadastro:login' %}">Entrar</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'cadastro:register' %}">Registrar-se</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page content -->
+    <section>
+        {% block content %}
+        {% endblock %}
+    </section>
+
+    <!-- Footer -->
+    <footer class="container pt-3 mt-4 text-muted border-top">
+        &copy; 2023
+    </footer>
+
+    <script src="{% static 'invest/bootstrap/bootstrap.bundle.min.js' %}"></script>
+</body>
+</html>
