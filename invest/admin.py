@@ -1,7 +1,9 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
-from .models import Asset, Content, Currency, Market, Wallet
+from .models import (
+    Asset, Content, Currency, InvestGroup, InvestType, Market, Wallet
+)
 from cadastro.models import User
 
 max_entries_per_page = 15
@@ -59,3 +61,5 @@ admin.site.register(Asset, AssetAdmin)
 admin.site.register(Wallet, WalletAdmin)
 admin.site.register(Currency)
 admin.site.register(Market)
+admin.site.register(InvestGroup)
+admin.site.register(InvestType)
