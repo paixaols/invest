@@ -8,11 +8,11 @@ class Currency(models.Model):
     class Meta:
         verbose_name = 'Moeda'
 
-    name = models.CharField('Nome', max_length=10)
+    currency = models.CharField('Nome', max_length=10)
     code = models.CharField('Código', max_length=10)
 
     def __str__(self):
-        return self.name
+        return self.currency
 
 
 class Market(models.Model):
@@ -21,10 +21,34 @@ class Market(models.Model):
         verbose_name = 'Local'
         verbose_name_plural = 'Locais'
 
-    name = models.CharField('Local', max_length=50)
+    market = models.CharField('Local', max_length=50)
 
     def __str__(self):
-        return self.name
+        return self.market
+
+
+class InvestType(models.Model):
+
+    class Meta:
+        verbose_name = 'Tipo de Investimento'
+        verbose_name_plural = 'Tipos de Investimento'
+
+    type = models.CharField('Tipo', max_length=50)
+
+    def __str__(self):
+        return self.type
+
+
+class InvestGroup(models.Model):
+
+    class Meta:
+        verbose_name = 'Grupo de Investimento'
+        verbose_name_plural = 'Grupos de Investimento'
+
+    group = models.CharField('Grupo', max_length=50)
+
+    def __str__(self):
+        return self.group
 
 
 class Asset(models.Model):
@@ -32,13 +56,12 @@ class Asset(models.Model):
     class Meta:
         verbose_name = 'Ativo'
 
-    # currency = models.ForeignKey(Currency, on_delete=models.CASCADE)
-    currency = models.CharField('Moeda', max_length=10)
     name = models.CharField('Nome do ativo', max_length=50)
     description = models.CharField('Descrição', max_length=100)
-    market = models.CharField('Mercado', max_length=50)
-    type = models.CharField('Tipo de investimento', max_length=50)
-    group = models.CharField('Grupo de investimento', max_length=50)
+    market = models.ForeignKey(Market, on_delete=models.CASCADE)
+    currency = models.ForeignKey(Currency, on_delete=models.CASCADE)
+    type = models.ForeignKey(InvestType, on_delete=models.CASCADE)
+    group = models.ForeignKey(InvestGroup, on_delete=models.CASCADE)
     expiration_date = models.DateTimeField('Vencimento', blank=True, null=True)
 
     def __str__(self):
@@ -73,7 +96,7 @@ class Content(models.Model):
 class MarketAgg(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     wallet = models.ForeignKey(Wallet, on_delete=models.CASCADE)
-    market = models.CharField('Mercado', max_length=50)
+    market = models.ForeignKey(Market, on_delete=models.CASCADE)
     cost = models.FloatField('Custo')
     value = models.FloatField('Valor')
 
