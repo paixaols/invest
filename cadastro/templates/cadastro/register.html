@@ -1,0 +1,46 @@
+{% extends 'cadastro/base_auth.html' %}
+
+
+{% block title %}Registrar-se{% endblock %}
+
+
+{% block form %}
+<div class="col-md-6 offset-md-3">
+
+    <h2>Registrar-se</h2>
+
+    <form action="{% url 'cadastro:register' %}" method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label class="form-label">Nome:</label>
+            <input class="form-control" type="text" name="first_name" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Sobrenome:</label>
+            <input class="form-control" type="text" name="last_name" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Email:</label>
+            <input class="form-control" type="email" name="email" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Senha:</label>
+            <input class="form-control" type="password" name="password1" required>
+        </div>
+        <!-- <div>
+            <ul>
+                <li>Sua senha não pode ser muito parecida dom o resto das suas informações pessoais.</li>
+                <li>Sua senha precisa conter pelo menos 8 caracteres.</li>
+                <li>Sua senha não pode ser uma senha comumente utilizada.</li>
+                <li>Sua senha não pode ser inteiramente numérica.</li>
+            </ul>
+        </div> -->
+        <div class="mb-3">
+            <label class="form-label">Confirmação de senha:</label>
+            <input class="form-control" type="password" name="password2" required>
+        </div>
+        <input class="btn btn-primary" type="submit" value="Enviar">
+    </form>
+
+</div>
+{% endblock %}
