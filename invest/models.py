@@ -3,31 +3,22 @@ from django.db import models
 from cadastro.models import User
 
 
-class Currency(models.Model):
-
-    class Meta:
-        verbose_name = 'Moeda'
-
-    currency = models.CharField('Nome', max_length=10)
-    code = models.CharField('Código', max_length=10)
-
-    def __str__(self):
-        return self.currency
-
-
 class Market(models.Model):
 
     class Meta:
         verbose_name = 'Local'
         verbose_name_plural = 'Locais'
 
-    market = models.CharField('Local', max_length=50)
+    name = models.CharField('Local', max_length=50)
+    currency = models.CharField('Moeda', max_length=10)
+    code = models.CharField('Código', max_length=10)
+    symbol = models.CharField('Símbolo', max_length=10)
 
     def __str__(self):
-        return self.market
+        return self.name
 
 
-class InvestType(models.Model):
+class AssetType(models.Model):
 
     class Meta:
         verbose_name = 'Tipo de Investimento'
@@ -39,7 +30,7 @@ class InvestType(models.Model):
         return self.type
 
 
-class InvestGroup(models.Model):
+class AssetGroup(models.Model):
 
     class Meta:
         verbose_name = 'Grupo de Investimento'
@@ -59,13 +50,15 @@ class Asset(models.Model):
     name = models.CharField('Nome do ativo', max_length=50)
     description = models.CharField('Descrição', max_length=100)
     market = models.ForeignKey(Market, on_delete=models.CASCADE)
-    currency = models.ForeignKey(Currency, on_delete=models.CASCADE)
-    type = models.ForeignKey(InvestType, on_delete=models.CASCADE)
-    group = models.ForeignKey(InvestGroup, on_delete=models.CASCADE)
+    type = models.ForeignKey(AssetType, on_delete=models.CASCADE)
+    group = models.ForeignKey(AssetGroup, on_delete=models.CASCADE)
     expiration_date = models.DateTimeField('Vencimento', blank=True, null=True)
 
     def __str__(self):
-        return self.name
+        if self.expiration_date is None:
+            return self.name
+        else:
+            return self.name + ' | ' + self.expiration_date.strftime('%Y-%m-%d')
 
 
 class Wallet(models.Model):
@@ -101,4 +94,16 @@ class MarketAgg(models.Model):
     value = models.FloatField('Valor')
 
     def __str__(self):
-        return str(self.user) + ' | ' + self.wallet.date.strftime('%Y-%m-%d')
+        return str(self.user) + ' | ' + str(self.market) + ' | ' + self.wallet.date.strftime('%Y-%m-%d')
+
+
+class GroupAgg(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    wallet = models.ForeignKey(Wallet, on_delete=models.CASCADE)
+    market = models.ForeignKey(Market, on_delete=models.CASCADE)
+    group = models.ForeignKey(AssetGroup, on_delete=models.CASCADE)
+    cost = models.FloatField('Custo')
+    value = models.FloatField('Valor')
+
+    def __str__(self):
+        return str(self.user) + ' | ' + str(self.group) + ' | ' + self.wallet.date.strftime('%Y-%m-%d')

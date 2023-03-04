@@ -1,6 +1,10 @@
 {% extends 'invest/base_logged.html' %}
 
 
+{% load getattribute %}
+{% load numberformat %}
+
+
 {% block logged_content %}
 
 <!-- Nav tabs -->
@@ -36,8 +40,8 @@
                                 {% for row in market_agg_table %}
                                     <tr>
                                         <td>{{ row.market }}</td>
-                                        <td>{{ row.cost }}</td>
-                                        <td>{{ row.value }}</td>
+                                        <td>{{ row.cost|currency:row.market.symbol }}</td>
+                                        <td>{{ row.value|currency:row.market.symbol }}</td>
                                     </tr>
                                 {% endfor %}
                             </tbody>
@@ -54,25 +58,28 @@
 
         <!-- Meus investimentos -->
         <h2 class="border-bottom">Meus investimentos</h2>
-        <div class="container-fluid">
-            <div class="row">
-
-                <div class="col-md-6 table-responsive table-fix-head" style="max-height: 400px;">
-                    <table class="table table-striped">
-                        <tbody>
-                            <tr>
-                                <td>-</td>
-                            </tr>
-                        </tbody>
-                    </table>
+        {% if group_agg %}
+            {% for market in group_agg %}
+                <h3>{{ market }}</h3>
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-md-6 table-responsive table-fix-head" style="max-height: 400px;">
+                            <table class="table table-striped">
+                                {% for row in group_agg|getattribute:market %}
+                                    <tr>
+                                        <td>{{ row.group }}</td>
+                                        <td>{{ row.value|currency:row.market.symbol }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </table>
+                        </div>
+                        <!-- <div class="col-md-6">
+                            <p>Gráfico barra</p>
+                        </div> -->
+                    </div>
                 </div>
-
-                <div class="col-md-6">
-                    <p>Gráfico barra</p>
-                </div>
-
-            </div>
-        </div>
+            {% endfor %}
+        {% endif %}
 
         <!-- Evolução patrimonial -->
         <h2 class="border-bottom">Evolução patrimonial</h2>
