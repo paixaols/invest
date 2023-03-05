@@ -81,6 +81,7 @@ class Content(models.Model):
     quantity = models.FloatField('Quantidade')
     cost = models.FloatField('Custo')
     price = models.FloatField('Cotação')
+    value = models.FloatField('Valor')
 
     def __str__(self):
         return self.asset.name + ' | ' + self.institution
