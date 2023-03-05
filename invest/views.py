@@ -31,8 +31,10 @@ class HomeView(LoginRequiredMixin, View):
             wallet = Wallet.objects.filter(user_id=request.user).latest('date')
         except Wallet.DoesNotExist:
             return render(request, 'invest/home.html', {})
+
         market_agg = MarketAgg.objects.filter(wallet_id=wallet.id).order_by('-value')
         markets = [ agg.market for agg in market_agg ]
+
         group_agg = {}
         for market in markets:
             qs = GroupAgg.objects.filter(wallet_id=wallet.id,
@@ -46,3 +48,29 @@ class HomeView(LoginRequiredMixin, View):
         }
 
         return render(request, 'invest/home.html', context)
+
+
+class CurrentWalletView(LoginRequiredMixin, View):
+    login_url = 'cadastro:login'
+    http_method_names = ['get']
+
+    def get(self, request, *args, **kwargs):
+        try:
+            wallet = Wallet.objects.filter(user_id=request.user).latest('date')
+        except Wallet.DoesNotExist:
+            return render(request, 'invest/home.html', {})
+
+        contents = Content.objects.filter(wallet_id=wallet.id)
+        markets = sorted({ item.asset.market.name for item in contents })
+        types = sorted({ item.asset.type.type for item in contents })
+        groups = sorted({ item.asset.group.group for item in contents })
+
+        context = {
+            'date': wallet.date,
+            'number_of_assets': len(contents),
+            'markets': markets,
+            'types': types,
+            'groups': groups,
+            'wallet': contents
+        }
+        return render(request, 'invest/current_wallet.html', context)

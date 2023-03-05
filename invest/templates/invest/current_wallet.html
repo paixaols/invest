@@ -1,0 +1,69 @@
+{% extends 'invest/base_logged.html' %}
+
+
+{% load numberformat %}
+
+
+{% block logged_content %}
+
+<h1 class="border-bottom">Meus investimentos</h1>
+
+<!-- Filtros -->
+<div class="mb-3">
+    <select id="market_selector">
+        <option value="">- Todos os locais -</option>
+        {% for market in markets %}
+            <option value="">{{ market }}</option>
+        {% endfor %}
+    </select>
+    <select id="type_selector">
+        <option value="">- Todos os tipos -</option>
+        {% for type in types %}
+            <option value="">{{ type }}</option>
+        {% endfor %}
+    </select>
+    <select id="group_selector">
+        <option value="">- Todos os grupos -</option>
+        {% for group in groups %}
+            <option value="">{{ group }}</option>
+        {% endfor %}
+    </select>
+</div>
+
+<!-- Info -->
+<div class="mb-3">
+    <p>{{ number_of_assets }} investimentos na sua carteira.</p>
+    <p>Última atualização em {{ date }}.</p>
+    <button type="button" class="btn btn-outline-dark btn-sm" data-bs-toggle="modal" data-bs-target="#new-asset-modal">+</button>
+</div>
+
+<!-- Assets list -->
+<div>
+    {% for invest in wallet %}
+    <div class="card mb-3">
+        <a class="stretched-link" href="" data-bs-toggle="modal" data-bs-target="#new-asset-modal"></a>
+        <div class="card-body">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-4">
+                        <p><strong>{{ invest.asset.name }}</strong></p>
+                        <p>Quantidade: {{ invest.quantity }}</p>
+                    </div>
+                    <div class="col-md-4">
+                        <p>{{ invest.asset.type }}</p>
+                        <p>Cotação: {{ invest.price|currency:invest.asset.market.symbol }}</p>
+                    </div>
+                    <div class="col-md-4">
+                        <p>{{ invest.asset.group }} - {{ invest.asset.market }}</p>
+                        {% if invest.asset.expiration_date is not None %}
+                            <p>Vencimento: {{ invest.asset.expiration_date }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% endblock %}
