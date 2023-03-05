@@ -83,6 +83,20 @@ class Content(models.Model):
     price = models.FloatField('Cotação')
     value = models.FloatField('Valor')
 
+    def save(
+        self, force_insert=False, force_update=False, using=None, update_fields=None
+    ):
+        self.value = self.quantity*self.price
+        if update_fields is not None:
+            if 'quantity' in update_fields or 'price' in update_fields:
+                update_fields = {'value'}.union(update_fields)
+        super().save(
+            force_insert=force_insert,
+            force_update=force_update,
+            using=using,
+            update_fields=update_fields
+        )
+
     def __str__(self):
         return self.asset.name + ' | ' + self.institution
 
