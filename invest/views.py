@@ -61,9 +61,9 @@ class CurrentWalletView(LoginRequiredMixin, View):
             return render(request, 'invest/home.html', {})
 
         contents = Content.objects.filter(wallet_id=wallet.id)
-        markets = sorted({ item.asset.market.name for item in contents })
-        types = sorted({ item.asset.type.type for item in contents })
-        groups = sorted({ item.asset.group.group for item in contents })
+        markets = sorted({ (item.asset.market.id, item.asset.market.name) for item in contents }, key=lambda x: x[1])
+        types = sorted({ (item.asset.type.id, item.asset.type.type) for item in contents }, key=lambda x: x[1])
+        groups = sorted({ (item.asset.group.id, item.asset.group.group) for item in contents }, key=lambda x: x[1])
 
         context = {
             'date': wallet.date,

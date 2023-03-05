@@ -8,62 +8,96 @@
 
 <h1 class="border-bottom">Meus investimentos</h1>
 
-<!-- Filtros -->
-<div class="mb-3">
-    <select id="market_selector">
-        <option value="">- Todos os locais -</option>
-        {% for market in markets %}
-            <option value="">{{ market }}</option>
-        {% endfor %}
-    </select>
-    <select id="type_selector">
-        <option value="">- Todos os tipos -</option>
-        {% for type in types %}
-            <option value="">{{ type }}</option>
-        {% endfor %}
-    </select>
-    <select id="group_selector">
-        <option value="">- Todos os grupos -</option>
-        {% for group in groups %}
-            <option value="">{{ group }}</option>
-        {% endfor %}
-    </select>
-</div>
-
 <!-- Info -->
 <div class="mb-3">
     <p>{{ number_of_assets }} investimentos na sua carteira.</p>
     <p>Última atualização em {{ date }}.</p>
-    <button type="button" class="btn btn-outline-dark btn-sm" data-bs-toggle="modal" data-bs-target="#new-asset-modal">+</button>
+</div>
+
+<!-- Filtros -->
+<div class="mb-3">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-4">
+                <select class="form-select" id="market_selector">
+                    <option value="ALL">- Todos os locais -</option>
+                    {% for market in markets %}
+                        <option value="market{{ market.0 }}">{{ market.1 }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <select class="form-select" id="type_selector">
+                    <option value="ALL">- Todos os tipos -</option>
+                    {% for type in types %}
+                        <option value="type{{ type.0 }}">{{ type.1 }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <select class="form-select" id="group_selector">
+                    <option value="ALL">- Todos os grupos -</option>
+                    {% for group in groups %}
+                        <option value="group{{ group.0 }}">{{ group.1 }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Assets list -->
 <div>
+    <button type="button" class="btn btn-outline-dark btn-sm" data-bs-toggle="modal" data-bs-target="#new-asset-modal">+</button>
     {% for invest in wallet %}
-    <div class="card mb-3">
-        <a class="stretched-link" href="" data-bs-toggle="modal" data-bs-target="#new-asset-modal"></a>
-        <div class="card-body">
-            <div class="container-fluid">
-                <div class="row">
-                    <div class="col-md-4">
-                        <p><strong>{{ invest.asset.name }}</strong></p>
-                        <p>Quantidade: {{ invest.quantity }}</p>
-                    </div>
-                    <div class="col-md-4">
-                        <p>{{ invest.asset.type }}</p>
-                        <p>Cotação: {{ invest.price|currency:invest.asset.market.symbol }}</p>
-                    </div>
-                    <div class="col-md-4">
-                        <p>{{ invest.asset.group }} - {{ invest.asset.market }}</p>
-                        {% if invest.asset.expiration_date is not None %}
-                            <p>Vencimento: {{ invest.asset.expiration_date }}</p>
-                        {% endif %}
+        <div class="card mb-3" id="market{{ invest.asset.market.id }} type{{ invest.asset.type.id }} group{{ invest.asset.group.id }}">
+            <a class="stretched-link" href="" data-bs-toggle="modal" data-bs-target="#new-asset-modal"></a>
+            <div class="card-body">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <p><strong>{{ invest.asset.name }}</strong></p>
+                            <p>Quantidade: {{ invest.quantity }}</p>
+                        </div>
+                        <div class="col-md-4">
+                            <p>{{ invest.asset.type }}</p>
+                            <p>Cotação: {{ invest.price|currency:invest.asset.market.symbol }}</p>
+                        </div>
+                        <div class="col-md-4">
+                            <p>{{ invest.asset.group }} - {{ invest.asset.market }}</p>
+                            {% if invest.asset.expiration_date is not None %}
+                                <p>Vencimento: {{ invest.asset.expiration_date }}</p>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
     {% endfor %}
 </div>
+
+<script>
+    function filterCards () {
+        var marketFilterState = document.getElementById("market_selector").value
+        var typeFilterState = document.getElementById("type_selector").value
+        var groupFilterState = document.getElementById("group_selector").value
+        document.querySelectorAll(".card").forEach(el => {
+            var cardIDs = el.id.split(" ")
+            el.style.display = "block"
+            if (marketFilterState != "ALL" && !cardIDs.includes(marketFilterState)) {
+                el.style.display = "none"
+            }
+            if (typeFilterState != "ALL" && !cardIDs.includes(typeFilterState)) {
+                el.style.display = "none"
+            }
+            if (groupFilterState != "ALL" && !cardIDs.includes(groupFilterState)) {
+                el.style.display = "none"
+            }
+        })
+    }
+    document.getElementById("market_selector").addEventListener("change", filterCards)
+    document.getElementById("type_selector").addEventListener("change", filterCards)
+    document.getElementById("group_selector").addEventListener("change", filterCards)
+</script>
 
 {% endblock %}
