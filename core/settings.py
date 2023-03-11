@@ -129,4 +129,5 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'cadastro.User'
 LOGIN_REDIRECT_URL = 'invest:home'
+LOGIN_URL = 'cadastro:login'
 LOGOUT_REDIRECT_URL = 'invest:index'

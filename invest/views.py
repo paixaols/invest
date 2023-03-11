@@ -1,18 +1,13 @@
 import pandas as pd
 
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import HttpResponse
-from django.shortcuts import render
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import get_object_or_404, render
 from django.views import View
 
-from .models import Asset, Content, GroupAgg, Market, MarketAgg, Wallet
+from .forms import ContentDetailForm
+from .models import Content, GroupAgg, MarketAgg, Wallet
 from cadastro.models import User
-
-
-def qs_to_df(queryset):
-    q = queryset.values()
-    df = pd.DataFrame.from_records(q)
-    return df
 
 
 class IndexView(View):
@@ -58,9 +53,10 @@ class CurrentWalletView(LoginRequiredMixin, View):
         try:
             wallet = Wallet.objects.filter(user_id=request.user).latest('date')
         except Wallet.DoesNotExist:
+            # TODO: Mudar esse comportamento
             return render(request, 'invest/home.html', {})
 
-        contents = Content.objects.filter(wallet_id=wallet.id)
+        contents = Content.objects.filter(wallet_id=wallet.id).order_by('-value')
         markets = sorted({ (item.asset.market.id, item.asset.market.name) for item in contents }, key=lambda x: x[1])
         types = sorted({ (item.asset.type.id, item.asset.type.type) for item in contents }, key=lambda x: x[1])
         groups = sorted({ (item.asset.group.id, item.asset.group.group) for item in contents }, key=lambda x: x[1])
@@ -71,6 +67,27 @@ class CurrentWalletView(LoginRequiredMixin, View):
             'markets': markets,
             'types': types,
             'groups': groups,
-            'wallet': contents
+            'wallet_contents': contents
         }
         return render(request, 'invest/current_wallet.html', context)
+
+
+class ContentDetail(LoginRequiredMixin, View):
+    login_url = 'cadastro:login'
+    http_method_names = ['get']
+
+    def get(self, request, content_id, *args, **kwargs):
+        content = get_object_or_404(Content, pk=content_id)
+        data = {
+            'quantity': content.quantity,
+            'cost': content.cost,
+            'price': content.price,
+            'value': content.value
+        }
+        context = {
+            'content': content,
+            'asset_name': content.asset.name,
+            'description': content.asset.description,
+            'form': ContentDetailForm(data)
+        }
+        return render(request, 'invest/content_detail.html', context)

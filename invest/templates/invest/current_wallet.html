@@ -48,10 +48,12 @@
 
 <!-- Assets list -->
 <div>
-    <button type="button" class="btn btn-outline-dark btn-sm" data-bs-toggle="modal" data-bs-target="#new-asset-modal">+</button>
-    {% for invest in wallet %}
+    <div class="mb-3">
+        <button type="button" class="btn btn-outline-dark btn-sm" data-bs-toggle="modal" data-bs-target="#new-content-modal">+</button>
+    </div>
+    {% for invest in wallet_contents %}
         <div class="card mb-3" id="market{{ invest.asset.market.id }} type{{ invest.asset.type.id }} group{{ invest.asset.group.id }}">
-            <a class="stretched-link" href="" data-bs-toggle="modal" data-bs-target="#new-asset-modal"></a>
+            <a class="stretched-link" href="{% url 'invest:content_detail' invest.id %}"></a>
             <div class="card-body">
                 <div class="container-fluid">
                     <div class="row">
@@ -61,7 +63,7 @@
                         </div>
                         <div class="col-md-4">
                             <p>{{ invest.asset.type }}</p>
-                            <p>Cotação: {{ invest.price|currency:invest.asset.market.symbol }}</p>
+                            <p>Valor: {{ invest.value|currency:invest.asset.market.symbol }}</p>
                         </div>
                         <div class="col-md-4">
                             <p>{{ invest.asset.group }} - {{ invest.asset.market }}</p>
@@ -75,6 +77,9 @@
         </div>
     {% endfor %}
 </div>
+
+<!-- Modal -->
+{% include 'invest/new_content_modal.html' %}
 
 <script>
     function filterCards () {

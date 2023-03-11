@@ -25,7 +25,7 @@
                 <ul class="navbar-nav ms-auto flex-nowrap">
                     {% if user.is_authenticated %}
                         <li class="nav-item ">
-                            <a class="nav-link" href="">Bem-vindo(a) {{ user.first_name }}</a>
+                            <a class="nav-link" href="{% url 'cadastro:change_password' %}">Bem-vindo(a) {{ user.first_name }}</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'logout' %}">Sair</a>

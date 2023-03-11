@@ -9,7 +9,10 @@ from cadastro.models import User
 max_entries_per_page = 15
 
 
-class CustomUserAdmin(UserAdmin):
+# ---------------------------------------------------------------------------- #
+# Cadastro
+# ---------------------------------------------------------------------------- #
+class UserProfileAdmin(UserAdmin):
     # Customize the list page.
     search_fields = ['email', 'first_name', 'last_name']
     list_display = [
@@ -30,7 +33,12 @@ class CustomUserAdmin(UserAdmin):
         ('Datas importantes', {'fields': ['date_joined', 'last_login']}),
     ]
 
+admin.site.register(User, UserProfileAdmin)
 
+
+# ---------------------------------------------------------------------------- #
+# Invest
+# ---------------------------------------------------------------------------- #
 class AssetAdmin(admin.ModelAdmin):
     search_fields = ['name', 'description']
     list_display = [
@@ -63,7 +71,6 @@ class GroupAdmin(admin.ModelAdmin):
 
 
 # Register your models here.
-admin.site.register(User, CustomUserAdmin)
 admin.site.register(Asset, AssetAdmin)
 admin.site.register(Wallet, WalletAdmin)
 admin.site.register(Market)

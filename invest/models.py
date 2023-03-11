@@ -90,6 +90,7 @@ class Content(models.Model):
         if update_fields is not None:
             if 'quantity' in update_fields or 'price' in update_fields:
                 update_fields = {'value'}.union(update_fields)
+
         super().save(
             force_insert=force_insert,
             force_update=force_update,

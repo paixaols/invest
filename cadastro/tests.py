@@ -4,9 +4,9 @@ from .forms import RegisterUserForm
 from .models import User
 
 
-#--------------------------------------------------#
+# ---------------------------------------------------------------------------- #
 # Test models
-#--------------------------------------------------#
+# ---------------------------------------------------------------------------- #
 class UserModelTests(TestCase):
     def test_create_user(self):
         user = User.objects.create_user(email='test@dev.com', password='123')
@@ -25,10 +25,10 @@ class UserModelTests(TestCase):
         self.assertIs(user.is_superuser, True)
 
 
-#--------------------------------------------------#
+# ---------------------------------------------------------------------------- #
 # Test forms
-#--------------------------------------------------#
-class RegisterUserFormTest(TestCase):
+# ---------------------------------------------------------------------------- #
+class RegisterUserFormTests(TestCase):
     def test_register_user_with_invalid_email(self):
         form_data = {
             'email': 'test',

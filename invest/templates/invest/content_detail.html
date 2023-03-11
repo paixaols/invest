@@ -1,0 +1,35 @@
+{% extends 'invest/base_logged.html' %}
+
+
+{% load numberformat %}
+
+
+{% block logged_content %}
+
+<h1 class="border-bottom">{{ asset_name }}</h1>
+<p>{{ description }}</p>
+
+<form action="" method="post">
+    {% csrf_token %}
+    <div>
+        <label class="form-label">Quantidade</label>
+        <input class="form-control" type="text" name="quantity" value="{{ form.quantity.value }}">
+    </div>
+    <div>
+        <label class="form-label">Custo</label>
+        <input class="form-control" type="text" name="cost" value="{{ form.cost.value }}">
+    </div>
+    <div>
+        <label class="form-label">Cotação</label>
+        <input class="form-control" type="text" name="price" value="{{ form.price.value }}">
+    </div>
+    <div>
+        <label class="form-label">Valor</label>
+        <span>{{ content.asset.market.symbol }}</span>
+        <input class="form-control" type="text" name="value" value="{{ form.value.value }}">
+    </div>
+    <input type="button" class="btn btn-secondary" value="Cancelar">
+    <input type="submit" class="btn btn-primary" value="Salvar">
+</form>
+
+{% endblock %}
