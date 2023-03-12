@@ -11,22 +11,30 @@
 
 <form action="" method="post">
     {% csrf_token %}
-    <div>
-        <label class="form-label">Quantidade</label>
-        <input class="form-control" type="text" name="quantity" value="{{ form.quantity.value }}">
+    <div class="mb-3">
+        <label class="form-label" for="quantity-input">Quantidade</label>
+        <input class="form-control" type="text" name="quantity" id="quantity-input" value="{{ form.quantity.value }}">
     </div>
-    <div>
-        <label class="form-label">Custo</label>
-        <input class="form-control" type="text" name="cost" value="{{ form.cost.value }}">
+    <div class="mb-3">
+        <label class="form-label" for="price-input">Cotação</label>
+        <div class="input-group">
+            <span class="input-group-text">{{ content.asset.market.symbol }}</span>
+            <input class="form-control" type="text" name="price" id="price-input" value="{{ form.price.value }}">
+        </div>
     </div>
-    <div>
-        <label class="form-label">Cotação</label>
-        <input class="form-control" type="text" name="price" value="{{ form.price.value }}">
+    <div class="mb-3">
+        <label class="form-label" for="cost-input">Custo</label>
+        <div class="input-group">
+            <span class="input-group-text">{{ content.asset.market.symbol }}</span>
+            <input class="form-control" type="text" name="cost" id="cost-input" value="{{ form.cost.value }}">
+        </div>
     </div>
-    <div>
-        <label class="form-label">Valor</label>
-        <span>{{ content.asset.market.symbol }}</span>
-        <input class="form-control" type="text" name="value" value="{{ form.value.value }}">
+    <div class="mb-3">
+        <label class="form-label" for="value-input">Valor</label>
+        <div class="input-group">
+            <span class="input-group-text">{{ content.asset.market.symbol }}</span>
+            <input class="form-control" type="text" name="value" id="value-input" value="{{ form.value.value }}">
+        </div>
     </div>
     <input type="button" class="btn btn-secondary" value="Cancelar">
     <input type="submit" class="btn btn-primary" value="Salvar">
