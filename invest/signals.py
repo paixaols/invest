@@ -13,6 +13,12 @@ def aggregate_wallet_contents(sender, instance, *args, **kwargs):
         Content.objects.filter(wallet_id=wallet_id)
     )
 
+    if df_content.shape[0] == 0:
+        # Carteira vazia, remover agregações existentes
+        MarketAgg.objects.filter(wallet_id=wallet_id).delete()
+        GroupAgg.objects.filter(wallet_id=wallet_id).delete()
+        return None
+
     # Associar info dos ativos
     asset_ids = df_content['asset_id'].unique()
     df_assets = qs_to_df(
