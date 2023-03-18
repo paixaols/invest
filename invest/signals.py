@@ -1,10 +1,10 @@
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_delete
 
 from .models import Asset, Content, GroupAgg, MarketAgg
 from .utils import qs_to_df
 
 
-def aggregate_wallet_contents(sender, instance, created, **kwargs):
+def aggregate_wallet_contents(sender, instance, *args, **kwargs):
     wallet_id = instance.wallet_id
     user_id = instance.user_id
 
@@ -70,3 +70,4 @@ def aggregate_wallet_contents(sender, instance, created, **kwargs):
 
 
 post_save.connect(aggregate_wallet_contents, sender=Content)
+post_delete.connect(aggregate_wallet_contents, sender=Content)
