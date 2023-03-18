@@ -36,8 +36,9 @@
             <input class="form-control" type="text" name="value" id="value-input" value="{{ form.value.value }}">
         </div>
     </div>
-    <input type="button" class="btn btn-secondary" value="Cancelar">
     <input type="submit" class="btn btn-primary" value="Salvar">
+    <a href="{% url 'invest:delete_content' content_id %}" class="btn btn-danger">Excluir</a>
+    <a href="{% url 'invest:content_list' %}" class="btn btn-outline-secondary">Cancelar</a>
 </form>
 
 {% endblock %}

@@ -1,8 +1,9 @@
 import pandas as pd
 
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
+from django.urls import reverse
 from django.views import View
 
 from .forms import ContentDetailForm
@@ -36,7 +37,6 @@ class HomeView(LoginRequiredMixin, View):
                                          market=market).order_by('-value')
             group_agg[market] = qs
         context = {
-            # 'last_updated': wallet.date,
             'last_updated': wallet.date.strftime('%d/%m/%Y'),
             'market_agg_table': market_agg,
             'group_agg': group_agg
@@ -81,7 +81,7 @@ class ContentListView(LoginRequiredMixin, View):
         return render(request, 'invest/wallet_content_list.html', context)
 
 
-class ContentDetail(LoginRequiredMixin, View):
+class ContentDetailView(LoginRequiredMixin, View):
     login_url = 'cadastro:login'
     http_method_names = ['get']
 
@@ -94,9 +94,20 @@ class ContentDetail(LoginRequiredMixin, View):
             'value': content.value
         }
         context = {
+            'content_id': content_id,
             'content': content,
             'asset_name': content.asset.name,
             'description': content.asset.description,
             'form': ContentDetailForm(data)
         }
         return render(request, 'invest/content_detail.html', context)
+
+
+class DeleteContentDetailView(LoginRequiredMixin, View):
+    login_url = 'cadastro:login'
+    http_method_names = ['get']
+
+    def get(self, request, content_id, *args, **kwargs):
+        content = Content.objects.get(pk=content_id)
+        content.delete()
+        return HttpResponseRedirect(reverse('invest:content_list'))
