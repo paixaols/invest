@@ -21,6 +21,7 @@ urlpatterns = [
     path('', include('invest.urls')),
     path('auth/', include('django.contrib.auth.urls')),
     path('auth/', include('cadastro.urls')),
+    path('api/', include('api.urls')),
 ]
 
 admin.site.site_title = 'Invest'# Site de administração do Django
