@@ -1,16 +1,42 @@
+{% load static %}
+
 <div class="modal fade" id="new-content-modal" data-bs-keyboard="true" tabindex="-1" aria-labelledby="ModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
 
             <div class="modal-header">
-                <h5 class="modal-title" id="ModalLabel">Novo ativo</h5>
+                <h5 class="modal-title" id="ModalLabel">Novo investimento</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
 
             <div class="modal-body">
                 <form action="" method="POST">
                     {% csrf_token %}
-                    {{ form.as_p }}
+                    <div class="mb-3">
+                        <select class="form-select" id="new_content_modal_market_select">
+                            <option value="0" disabled selected>Local</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <select class="form-select" id="new_content_modal_type_select">
+                            <option value="0" disabled selected>Tipo</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <select class="form-select" id="new_content_modal_group_select">
+                            <option value="0" disabled selected>Grupo</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <select class="form-select" id="new_content_modal_asset_select">
+                            <option value="0" disabled selected>Ativo</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="quantity_input">Quantidade</label>
+                        <input class="form-control" type="text" name="quantity" id="quantity_input">
+                    </div>
+                
                     <input type="button"  class="btn btn-secondary"  data-bs-dismiss="modal" value="Cancelar">
                     <input type="submit" class="btn btn-primary" value="Salvar">
                 </form>
@@ -19,3 +45,48 @@
         </div>
     </div>
 </div>
+
+<script src="{% static 'invest/js/api.js' %}"></script>
+
+<script>
+    serialize = function(obj, skipVal=undefined) {
+        // Build query string from an object.
+        var str = [];
+        for (var p in obj) {
+            if (obj[p] === skipVal) continue
+            if (obj.hasOwnProperty(p)) {
+                str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+            }
+        }
+        return str.join("&");
+    }
+
+    function populateSelectElement(elemID, valueParam, textParam, response) {
+        // TODO: limpar options anteriores
+        let select = document.getElementById(elemID)
+        for (r in response) {
+            var opt = document.createElement('option')
+            opt.value = response[r][valueParam]
+            opt.innerHTML = response[r][textParam]
+            select.appendChild(opt)
+        }
+    }
+
+    makeRequest('GET', baseApiURL+'get-markets/', undefined, (response) => {populateSelectElement('new_content_modal_market_select', 'id', 'name', response)})
+    makeRequest('GET', baseApiURL+'get-asset-types/', undefined, (response) => {populateSelectElement('new_content_modal_type_select', 'id', 'type', response)})
+    makeRequest('GET', baseApiURL+'get-asset-groups/', undefined, (response) => {populateSelectElement('new_content_modal_group_select', 'id', 'group', response)})
+
+    document.getElementById("new_content_modal_group_select").addEventListener('change', () => {
+        var marketID = document.getElementById("new_content_modal_market_select").value
+        var typeID = document.getElementById("new_content_modal_type_select").value
+        var groupID = document.getElementById("new_content_modal_group_select").value
+
+        let obj = {market: marketID, type: typeID, group: groupID}
+        let params = serialize(obj, skipVal='0')
+
+        let url = baseApiURL + 'get-assets/'
+        url += params ? '?'+params : ''
+
+        makeRequest('GET', url, undefined, (response) => {populateSelectElement('new_content_modal_asset_select', 'id', 'name', response)})
+    })
+</script>

@@ -6,3 +6,10 @@ class ContentDetailForm(forms.Form):
     cost = forms.FloatField(label='Custo')
     price = forms.FloatField(label='Cotação')
     value = forms.FloatField(label='Valor')
+
+
+class NewContentForm(forms.Form):
+    quantity = forms.FloatField(label='Quantidade')
+    cost = forms.FloatField(label='Custo')
+    price = forms.FloatField(label='Cotação')
+    value = forms.FloatField(label='Valor')

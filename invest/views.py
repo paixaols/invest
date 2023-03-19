@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.views import View
 
-from .forms import ContentDetailForm
+from .forms import ContentDetailForm, NewContentForm
 from .models import Content, GroupAgg, MarketAgg, Wallet
 from cadastro.models import User
 
@@ -76,7 +76,8 @@ class ContentListView(LoginRequiredMixin, View):
             'markets': markets,
             'types': types,
             'groups': groups,
-            'wallet_contents': contents
+            'wallet_contents': contents,
+            'new_content_form': NewContentForm()
         }
         return render(request, 'invest/wallet_content_list.html', context)
 
