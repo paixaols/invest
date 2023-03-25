@@ -25,3 +25,14 @@ function makeRequest(method, url, data=undefined, callback=undefined) {
         xhr.send(JSON.stringify(data))
     }
 }
+
+queryStrDeserializer = function(obj) {
+    // Build query string from an object.
+    var str = [];
+    for (var p in obj) {
+        if (obj.hasOwnProperty(p)) {
+            str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+        }
+    }
+    return str.join("&");
+}
