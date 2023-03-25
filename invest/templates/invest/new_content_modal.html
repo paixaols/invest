@@ -13,28 +13,30 @@
                 <form action="" method="POST">
                     {% csrf_token %}
                     <div class="mb-3">
-                        <select class="form-select" id="new_content_modal_market_select">
-                            <option value="0" disabled selected>Local</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <select class="form-select" id="new_content_modal_type_select">
-                            <option value="0" disabled selected>Tipo</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
                         <select class="form-select" id="new_content_modal_group_select">
-                            <option value="0" disabled selected>Grupo</option>
+                            <option value="" disabled selected>Grupo</option>
                         </select>
                     </div>
                     <div class="mb-3">
-                        <select class="form-select" id="new_content_modal_asset_select">
-                            <option value="0" disabled selected>Ativo</option>
+                        <select class="form-select" id="new_content_modal_asset_select" required>
+                            <option value="" disabled selected>Ativo</option>
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label" for="quantity_input">Quantidade</label>
-                        <input class="form-control" type="text" name="quantity" id="quantity_input">
+                        <label class="form-label" for="new_content_modal_institution_input">Instituição</label>
+                        <input class="form-control" type="text" name="institution" id="new_content_modal_institution_input" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="new_content_modal_quantity_input">Quantidade</label>
+                        <input class="form-control" type="text" name="quantity" id="new_content_modal_quantity_input" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="new_content_modal_price_input">Cotação</label>
+                        <input class="form-control" type="text" name="price" id="new_content_modal_price_input" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="new_content_modal_cost_input">Custo</label>
+                        <input class="form-control" type="text" name="cost" id="new_content_modal_cost_input" required>
                     </div>
                 
                     <input type="button"  class="btn btn-secondary"  data-bs-dismiss="modal" value="Cancelar">
@@ -49,21 +51,10 @@
 <script src="{% static 'invest/js/api.js' %}"></script>
 
 <script>
-    serialize = function(obj, skipVal=undefined) {
-        // Build query string from an object.
-        var str = [];
-        for (var p in obj) {
-            if (obj[p] === skipVal) continue
-            if (obj.hasOwnProperty(p)) {
-                str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
-            }
-        }
-        return str.join("&");
-    }
-
     function populateSelectElement(elemID, valueParam, textParam, response) {
-        // TODO: limpar options anteriores
         let select = document.getElementById(elemID)
+        select.options[0].selected = true
+        select.length = 1
         for (r in response) {
             var opt = document.createElement('option')
             opt.value = response[r][valueParam]
@@ -72,21 +63,15 @@
         }
     }
 
-    makeRequest('GET', baseApiURL+'get-markets/', undefined, (response) => {populateSelectElement('new_content_modal_market_select', 'id', 'name', response)})
-    makeRequest('GET', baseApiURL+'get-asset-types/', undefined, (response) => {populateSelectElement('new_content_modal_type_select', 'id', 'type', response)})
-    makeRequest('GET', baseApiURL+'get-asset-groups/', undefined, (response) => {populateSelectElement('new_content_modal_group_select', 'id', 'group', response)})
+    makeRequest('GET', baseApiURL+'get-asset-groups/', undefined, (response) => {
+        populateSelectElement('new_content_modal_group_select', 'id', 'group', response)
+    })
 
     document.getElementById("new_content_modal_group_select").addEventListener('change', () => {
-        var marketID = document.getElementById("new_content_modal_market_select").value
-        var typeID = document.getElementById("new_content_modal_type_select").value
         var groupID = document.getElementById("new_content_modal_group_select").value
-
-        let obj = {market: marketID, type: typeID, group: groupID}
-        let params = serialize(obj, skipVal='0')
-
-        let url = baseApiURL + 'get-assets/'
-        url += params ? '?'+params : ''
-
-        makeRequest('GET', url, undefined, (response) => {populateSelectElement('new_content_modal_asset_select', 'id', 'name', response)})
+        let url = baseApiURL + 'get-assets/?group=' + groupID
+        makeRequest('GET', url, undefined, (response) => {
+            populateSelectElement('new_content_modal_asset_select', 'id', 'name', response)
+        })
     })
 </script>
