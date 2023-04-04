@@ -109,6 +109,7 @@ class DeleteContentDetailView(LoginRequiredMixin, View):
     http_method_names = ['get']
 
     def get(self, request, content_id, *args, **kwargs):
-        content = Content.objects.get(pk=content_id)
-        content.delete()
+        content = get_object_or_404(Content, pk=content_id)
+        if request.user == content.user:
+            content.delete()
         return HttpResponseRedirect(reverse('invest:content_list'))
