@@ -19,7 +19,7 @@ class ContentModelTests(TestCase):
         self.asset = Asset.objects.create(
             name='TEST', type=self.asset_type, group=self.asset_group, market=self.market
         )
-        self.wallet = Wallet.objects.create(user=self.user, date=timezone.now())
+        self.wallet = Wallet.objects.create(user=self.user, dt_created=timezone.now())
 
     def test_save_method_on_content_creation(self):
         '''O método save do modelo Content deve calcular o valor.'''
@@ -75,7 +75,7 @@ class ContentAggregationSignalTests(TestCase):
         self.asset_4 = Asset.objects.create(
             name='Asset group Y', type=self.asset_type, group=self.group_y, market=self.market_a
         )
-        self.wallet = Wallet.objects.create(user=self.user, date=timezone.now())
+        self.wallet = Wallet.objects.create(user=self.user, dt_created=timezone.now())
 
     def test_market_aggregation_on_content_post_save(self):
         agg_exists = MarketAgg.objects.filter(wallet=self.wallet).exists()

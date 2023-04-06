@@ -24,7 +24,7 @@ class HomeView(LoginRequiredMixin, View):
 
     def get(self, request, *args, **kwargs):
         try:
-            wallet = Wallet.objects.filter(user_id=request.user).latest('date')
+            wallet = Wallet.objects.filter(user_id=request.user).latest('dt_updated')
         except Wallet.DoesNotExist:
             return render(request, 'invest/home.html', {})
 
@@ -37,7 +37,7 @@ class HomeView(LoginRequiredMixin, View):
                                          market=market).order_by('-value')
             group_agg[market] = qs
         context = {
-            'last_updated': wallet.date.strftime('%d/%m/%Y'),
+            'last_updated': wallet.dt_updated.strftime('%d/%m/%Y'),
             'market_agg_table': market_agg,
             'group_agg': group_agg
         }
@@ -51,7 +51,7 @@ class ContentListView(LoginRequiredMixin, View):
 
     def get(self, request, *args, **kwargs):
         try:
-            wallet = Wallet.objects.filter(user_id=request.user).latest('date')
+            wallet = Wallet.objects.filter(user_id=request.user).latest('dt_updated')
         except Wallet.DoesNotExist:
             # TODO: Mudar esse comportamento
             return render(request, 'invest/home.html', {})
@@ -71,7 +71,7 @@ class ContentListView(LoginRequiredMixin, View):
         )
 
         context = {
-            'date': wallet.date,
+            'date': wallet.dt_updated,
             'number_of_assets': len(contents),
             'markets': markets,
             'types': types,

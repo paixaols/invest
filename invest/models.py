@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 
 from cadastro.models import User
 
@@ -67,10 +68,23 @@ class Wallet(models.Model):
         verbose_name = 'Carteira'
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    date = models.DateTimeField('Data')
+    dt_created = models.DateTimeField('Data de criação')
+    dt_updated = models.DateTimeField('Data de atualização')
+
+    def save(
+        self, force_insert=False, force_update=False, using=None, update_fields=None
+    ):
+        self.dt_updated = timezone.now()
+        if update_fields is not None:
+            update_fields = {'dt_updated'}.union(update_fields)
+
+        super().save(
+            force_insert=force_insert, force_update=force_update, using=using,
+            update_fields=update_fields
+        )
 
     def __str__(self):
-        return self.user.email + ' | ' + self.date.strftime('%Y-%m-%d')
+        return self.user.email + ' | ' + self.dt_updated.strftime('%Y-%m-%d')
 
 
 class Content(models.Model):
@@ -110,7 +124,7 @@ class MarketAgg(models.Model):
     value = models.FloatField('Valor')
 
     def __str__(self):
-        return str(self.user) + ' | ' + str(self.market) + ' | ' + self.wallet.date.strftime('%Y-%m-%d')
+        return str(self.user) + ' | ' + str(self.market) + ' | ' + self.wallet.dt_updated.strftime('%Y-%m-%d')
 
 
 class GroupAgg(models.Model):
@@ -122,4 +136,4 @@ class GroupAgg(models.Model):
     value = models.FloatField('Valor')
 
     def __str__(self):
-        return str(self.user) + ' | ' + str(self.group) + ' | ' + self.wallet.date.strftime('%Y-%m-%d')
+        return str(self.user) + ' | ' + str(self.group) + ' | ' + self.wallet.dt_updated.strftime('%Y-%m-%d')

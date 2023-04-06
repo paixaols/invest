@@ -56,7 +56,7 @@ class ContentInline(admin.TabularInline):
 class WalletAdmin(admin.ModelAdmin):
     search_fields = ['user__email']
     list_display = [
-        'user', 'date'
+        'user', 'dt_created', 'dt_updated'
     ]
     list_per_page = max_entries_per_page
     inlines = [ContentInline]
