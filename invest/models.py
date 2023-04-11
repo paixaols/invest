@@ -19,6 +19,18 @@ class Market(models.Model):
         return self.name
 
 
+class Bank(models.Model):
+
+    class Meta:
+        verbose_name = 'Banco'
+
+    name = models.CharField('Nome do banco ou corretora', max_length=50)
+    market = models.ForeignKey(Market, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name
+
+
 class AssetType(models.Model):
 
     class Meta:
@@ -91,7 +103,7 @@ class Content(models.Model):
     wallet = models.ForeignKey(Wallet, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     asset = models.ForeignKey(Asset, on_delete=models.CASCADE)
-    institution = models.CharField('Instituição', max_length=50)
+    bank = models.ForeignKey(Bank, on_delete=models.CASCADE)
     quantity = models.FloatField('Quantidade')
     cost = models.FloatField('Custo')
     price = models.FloatField('Cotação')
@@ -113,7 +125,7 @@ class Content(models.Model):
         )
 
     def __str__(self):
-        return self.asset.name + ' | ' + self.institution
+        return self.asset.name + ' | ' + self.bank.name
 
 
 class MarketAgg(models.Model):

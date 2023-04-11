@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
 from .models import (
-    Asset, Content, AssetGroup, AssetType, Market, Wallet
+    Asset, Bank, Content, AssetGroup, AssetType, Market, Wallet
 )
 from cadastro.models import User
 
@@ -47,6 +47,19 @@ class AssetAdmin(admin.ModelAdmin):
     list_filter = ['market', 'type', 'group']
     list_per_page = max_entries_per_page
 
+admin.site.register(Asset, AssetAdmin)
+
+
+class BankAdmin(admin.ModelAdmin):
+    search_fields = ['name', 'description']
+    list_display = [
+        'name', 'market'
+    ]
+    list_filter = ['market']
+    list_per_page = max_entries_per_page
+
+admin.site.register(Bank, BankAdmin)
+
 
 class ContentInline(admin.TabularInline):
     model = Content
@@ -61,6 +74,8 @@ class WalletAdmin(admin.ModelAdmin):
     list_per_page = max_entries_per_page
     inlines = [ContentInline]
 
+admin.site.register(Wallet, WalletAdmin)
+
 
 class GroupAdmin(admin.ModelAdmin):
     search_fields = ['group']
@@ -69,10 +84,7 @@ class GroupAdmin(admin.ModelAdmin):
     ]
     list_per_page = max_entries_per_page
 
-
-# Register your models here.
-admin.site.register(Asset, AssetAdmin)
-admin.site.register(Wallet, WalletAdmin)
-admin.site.register(Market)
 admin.site.register(AssetGroup, GroupAdmin)
+
+admin.site.register(Market)
 admin.site.register(AssetType)
