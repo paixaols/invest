@@ -96,11 +96,12 @@ admin.site.register(AssetType)
 # ---------------------------------------------------------------------------- #
 class DividendAdmin(admin.ModelAdmin):
     list_display = [
-        'date', 'asset', 'bank', 'value', 'moeda'
+        'date', 'asset', 'bank', 'value', 'asset_currency'
     ]
     list_per_page = MAX_ENTRIES_PER_PAGE
 
-    def moeda(self, obj):
+    @admin.display(ordering='asset__market__currency', description='Moeda')
+    def asset_currency(self, obj):
         return obj.asset.market.currency
 
     def get_queryset(self, request):
