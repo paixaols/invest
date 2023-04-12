@@ -5,8 +5,9 @@ from .models import (
     Asset, Bank, Content, AssetGroup, AssetType, Market, Wallet
 )
 from cadastro.models import User
+from statement.models import Dividend, Transaction
 
-max_entries_per_page = 15
+MAX_ENTRIES_PER_PAGE = 15
 
 
 # ---------------------------------------------------------------------------- #
@@ -20,7 +21,7 @@ class UserProfileAdmin(UserAdmin):
         'is_superuser', 'date_joined', 'last_login'
     ]
     list_filter = ['is_active', 'is_staff', 'is_superuser']
-    list_per_page = max_entries_per_page
+    list_per_page = MAX_ENTRIES_PER_PAGE
 
     # Customize the detail form page.
     fieldsets = [
@@ -45,7 +46,7 @@ class AssetAdmin(admin.ModelAdmin):
         'name', 'description', 'market', 'type', 'group', 'expiration_date'
     ]
     list_filter = ['market', 'type', 'group']
-    list_per_page = max_entries_per_page
+    list_per_page = MAX_ENTRIES_PER_PAGE
 
 admin.site.register(Asset, AssetAdmin)
 
@@ -56,7 +57,7 @@ class BankAdmin(admin.ModelAdmin):
         'name', 'market'
     ]
     list_filter = ['market']
-    list_per_page = max_entries_per_page
+    list_per_page = MAX_ENTRIES_PER_PAGE
 
 admin.site.register(Bank, BankAdmin)
 
@@ -71,7 +72,7 @@ class WalletAdmin(admin.ModelAdmin):
     list_display = [
         'user', 'dt_created', 'dt_updated'
     ]
-    list_per_page = max_entries_per_page
+    list_per_page = MAX_ENTRIES_PER_PAGE
     inlines = [ContentInline]
 
 admin.site.register(Wallet, WalletAdmin)
@@ -82,9 +83,40 @@ class GroupAdmin(admin.ModelAdmin):
     list_display = [
         'group'
     ]
-    list_per_page = max_entries_per_page
+    list_per_page = MAX_ENTRIES_PER_PAGE
 
 admin.site.register(AssetGroup, GroupAdmin)
 
 admin.site.register(Market)
 admin.site.register(AssetType)
+
+
+# ---------------------------------------------------------------------------- #
+# Statement
+# ---------------------------------------------------------------------------- #
+class DividendAdmin(admin.ModelAdmin):
+    list_display = [
+        'date', 'asset', 'bank', 'value', 'moeda'
+    ]
+    list_per_page = MAX_ENTRIES_PER_PAGE
+
+    def moeda(self, obj):
+        return obj.asset.market.currency
+
+    def get_queryset(self, request):
+        return Dividend.objects.filter(user=request.user)
+
+admin.site.register(Dividend, DividendAdmin)
+
+
+class TransactionAdmin(admin.ModelAdmin):
+    list_display = [
+        'date', 'event', 'asset', 'quantity', 'bank'
+    ]
+    list_filter = ['event', 'bank']
+    list_per_page = MAX_ENTRIES_PER_PAGE
+
+    def get_queryset(self, request):
+        return Transaction.objects.filter(user=request.user)
+
+admin.site.register(Transaction, TransactionAdmin)

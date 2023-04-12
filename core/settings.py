@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'cadastro.apps.CadastroConfig',
     'invest.apps.InvestConfig',
     'api.apps.ApiConfig',
+    'statement.apps.StatementConfig',
 ]
 
 MIDDLEWARE = [
