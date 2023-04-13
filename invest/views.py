@@ -88,20 +88,22 @@ class ContentDetailView(LoginRequiredMixin, View):
 
     def get(self, request, content_id, *args, **kwargs):
         content = get_object_or_404(Content, pk=content_id)
-        data = {
-            'quantity': content.quantity,
-            'cost': content.cost,
-            'price': content.price,
-            'value': content.value
-        }
-        context = {
-            'content_id': content_id,
-            'content': content,
-            'asset_name': content.asset.name,
-            'description': content.asset.description,
-            'form': ContentDetailForm(data)
-        }
-        return render(request, 'invest/content_detail.html', context)
+        if request.user == content.user:
+            data = {
+                'quantity': content.quantity,
+                'cost': content.cost,
+                'price': content.price,
+                'value': content.value
+            }
+            context = {
+                'content_id': content_id,
+                'content': content,
+                'asset_name': content.asset.name,
+                'description': content.asset.description,
+                'form': ContentDetailForm(data)
+            }
+            return render(request, 'invest/content_detail.html', context)
+        return HttpResponseRedirect(reverse('invest:content_list'))
 
 
 class DeleteContentDetailView(LoginRequiredMixin, View):

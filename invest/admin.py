@@ -95,6 +95,7 @@ admin.site.register(AssetType)
 # Statement
 # ---------------------------------------------------------------------------- #
 class DividendAdmin(admin.ModelAdmin):
+    search_fields = ['asset__name', 'bank__name']
     list_display = [
         'date', 'asset', 'bank', 'value', 'asset_currency'
     ]
