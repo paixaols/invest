@@ -106,19 +106,20 @@ class DividendAdmin(admin.ModelAdmin):
         return obj.asset.market.currency
 
     def get_queryset(self, request):
-        return Dividend.objects.filter(user=request.user)
+        return Dividend.objects.filter(user=request.user).order_by('-date')
 
 admin.site.register(Dividend, DividendAdmin)
 
 
 class TransactionAdmin(admin.ModelAdmin):
+    search_fields = ['asset__name', 'bank__name']
     list_display = [
         'date', 'event', 'asset', 'quantity', 'bank'
     ]
-    list_filter = ['event', 'bank']
+    list_filter = ['event']
     list_per_page = MAX_ENTRIES_PER_PAGE
 
     def get_queryset(self, request):
-        return Transaction.objects.filter(user=request.user)
+        return Transaction.objects.filter(user=request.user).order_by('-date')
 
 admin.site.register(Transaction, TransactionAdmin)

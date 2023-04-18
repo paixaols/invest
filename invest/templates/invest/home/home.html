@@ -1,0 +1,42 @@
+{% extends 'invest/base_logged.html' %}
+
+
+{% load getattribute %}
+{% load numberformat %}
+
+
+{% block logged_content %}
+<!-- Nav tabs -->
+<ul class="nav nav-tabs" id="myTab" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home-tab-pane" type="button" role="tab" aria-controls="home-tab-pane" aria-selected="true">
+            Visão geral
+        </button>
+    </li>
+    <!-- <li class="nav-item" role="presentation">
+        <button class="nav-link" id="renda-fixa-tab" data-bs-toggle="tab" data-bs-target="#renda-fixa-tab-pane" type="button" role="tab" aria-controls="renda-fixa-tab-pane" aria-selected="false">
+            Tab 2
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="renda-variavel-tab" data-bs-toggle="tab" data-bs-target="#renda-variavel-tab-pane" type="button" role="tab" aria-controls="renda-variavel-tab-pane" aria-selected="false">
+            Tab 3
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="cripto-tab" data-bs-toggle="tab" data-bs-target="#cripto-tab-pane" type="button" role="tab" aria-controls="cripto-tab-pane" aria-selected="false">
+            Tab 4
+        </button>
+    </li> -->
+</ul>
+
+<!-- Tab content -->
+<div class="tab-content" id="myTabContent">
+    <div class="tab-pane fade show active" id="home-tab-pane" role="tabpanel" aria-labelledby="home-tab" tabindex="0">
+        {% include 'invest/home/tab_general.html' %}
+    </div>
+    <!-- <div class="tab-pane fade" id="renda-fixa-tab-pane" role="tabpanel" aria-labelledby="renda-fixa-tab" tabindex="0">Tab 2</div>
+    <div class="tab-pane fade" id="renda-variavel-tab-pane" role="tabpanel" aria-labelledby="renda-variavel-tab" tabindex="0">Tab 3</div>
+    <div class="tab-pane fade" id="cripto-tab-pane" role="tabpanel" aria-labelledby="cripto-tab" tabindex="0">Tab 4</div> -->
+</div>
+{% endblock %}

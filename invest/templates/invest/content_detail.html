@@ -41,4 +41,44 @@
     <a href="{% url 'invest:content_list' %}" class="btn btn-outline-secondary">Cancelar</a>
 </form>
 
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-6">
+            <canvas id="chart-dividend" width="400" height="200"></canvas>
+        </div>
+        <div class="col-md-6 table-responsive table-fix-head">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Data</th><th>Cotação</th><th>Dividendo</th><th>DY</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if table_dividend %}
+                        {% for row in table_dividend %}
+                            <tr>
+                                <td>{{ row.date }}</td>
+                                <td></td>
+                                <td>{{ row.value|currency:row.asset.market.symbol }}</td>
+                                <td></td>
+                            </tr>
+                        {% endfor %}
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    if ('{{ plot_data }}') {
+        var data = JSON.parse('{{ plot_data|escapejs }}')
+        var ylabel = '{{ currency_symbol|escapejs }}'
+        var ctx = document.getElementById('chart-dividend')
+        var x = Object.values(data.date)
+        var datasets = [{data: Object.values(data.value)}]
+        plot(x, datasets, ctx, {ylabel: ylabel})
+    }
+</script>
+
 {% endblock %}

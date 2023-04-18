@@ -1,0 +1,78 @@
+{% load static %}
+
+{% load getattribute %}
+{% load numberformat %}
+
+<!-- Meu patrimônio -->
+<h2 class="border-bottom">Meu patrimônio</h2>
+<p class="text-muted">Última atualização em {{ last_updated }}.</p>
+<div class="container-fluid">
+    {% if market_agg_table %}
+        <div class="row">
+
+            <div class="col-md-6 table-responsive table-fix-head" style="max-height: 400px;">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Local</th><th>Custo</th><th>Valor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in market_agg_table %}
+                            <tr>
+                                <td>{{ row.market }}</td>
+                                <td>{{ row.cost|currency:row.market.symbol }}</td>
+                                <td>{{ row.value|currency:row.market.symbol }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- <div class="col-md-6">
+                <p>Gráfico pizza</p>
+            </div> -->
+
+        </div>
+    {% endif %}
+</div>
+
+<!-- Grupos de investimentos -->
+<h2 class="border-bottom">Grupos de investimentos</h2>
+{% if group_agg %}
+    {% for market in group_agg %}
+        <h3>{{ market }}</h3>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-5 table-responsive table-fix-head" style="max-height: 400px;">
+                    <table class="table table-striped">
+                        {% for row in group_agg|getattribute:market %}
+                            <tr>
+                                <td>{{ row.group }}</td>
+                                <td>{{ row.value|currency:row.currency_repr }}</td>
+                                <td>{{ row.pct|number:1 }}%</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+                <div class="col-md-7">
+                    <canvas id="chart-market-{{ market }}" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+{% endif %}
+
+<!-- Evolução patrimonial -->
+<h2 class="border-bottom">Evolução patrimonial</h2>
+
+<script>
+    var group_plot = JSON.parse('{{ group_plot|escapejs }}')
+
+    for(market in group_plot){
+        var ctx = document.getElementById('chart-market-'+market)
+        var x = group_plot[market]['x']
+        var datasets = [{data: group_plot[market]['y']}]
+        plot(x, datasets, ctx, {ylabel: group_plot[market]['currency_symbol']})
+    }
+</script>

@@ -1,3 +1,4 @@
+import json
 import pandas as pd
 
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -8,7 +9,9 @@ from django.views import View
 
 from .forms import ContentDetailForm, NewContentForm
 from .models import Content, GroupAgg, MarketAgg, Wallet
+from .utils import qs_to_df
 from cadastro.models import User
+from statement.models import Dividend
 
 
 class IndexView(View):
@@ -32,17 +35,29 @@ class HomeView(LoginRequiredMixin, View):
         markets = [ agg.market for agg in market_agg ]
 
         group_agg = {}
+        group_plot = {}
         for market in markets:
             qs = GroupAgg.objects.filter(wallet_id=wallet.id,
                                          market=market).order_by('-value')
-            group_agg[market] = qs
+            df = qs_to_df(qs, 'group_id__group', 'value', 'market_id__symbol')
+            df.columns = ['group', 'value', 'currency_repr']
+            total = df['value'].sum()
+            df['pct'] = df['value'].apply(lambda x: 100*x/total)
+            group_agg[market] = df.to_dict(orient='records')
+            group_plot[market.name] = {
+                'x': df['group'].to_list(),
+                'y': df['value'].to_list(),
+                'currency_symbol': market.symbol
+            }
+
         context = {
             'last_updated': wallet.dt_updated.strftime('%d/%m/%Y'),
             'market_agg_table': market_agg,
-            'group_agg': group_agg
+            'group_agg': group_agg,
+            'group_plot': json.dumps(group_plot)
         }
 
-        return render(request, 'invest/home.html', context)
+        return render(request, 'invest/home/home.html', context)
 
 
 class ContentListView(LoginRequiredMixin, View):
@@ -88,22 +103,37 @@ class ContentDetailView(LoginRequiredMixin, View):
 
     def get(self, request, content_id, *args, **kwargs):
         content = get_object_or_404(Content, pk=content_id)
-        if request.user == content.user:
-            data = {
-                'quantity': content.quantity,
-                'cost': content.cost,
-                'price': content.price,
-                'value': content.value
-            }
-            context = {
-                'content_id': content_id,
-                'content': content,
-                'asset_name': content.asset.name,
-                'description': content.asset.description,
-                'form': ContentDetailForm(data)
-            }
-            return render(request, 'invest/content_detail.html', context)
-        return HttpResponseRedirect(reverse('invest:content_list'))
+        if request.user != content.user:
+            return HttpResponseRedirect(reverse('invest:content_list'))
+
+        content_data = {
+            'quantity': content.quantity,
+            'cost': content.cost,
+            'price': content.price,
+            'value': content.value,
+            'currency_symbol': content.asset.market.symbol
+        }
+        context = {
+            'content_id': content_id,
+            'content': content,
+            'asset_name': content.asset.name,
+            'description': content.asset.description,
+            'currency_symbol': content.asset.market.symbol,
+            'form': ContentDetailForm(content_data),
+        }
+
+        qs = Dividend.objects.filter(
+            user=request.user,
+            asset=content.asset,
+            bank=content.bank
+        ).order_by('-date')
+        if qs.exists():
+            dividend = qs_to_df(qs, 'date', 'value')
+            dividend['date'] = dividend['date'].apply(lambda x: x.isoformat())
+            context['table_dividend'] = qs
+            context['plot_data'] = dividend.sort_values('date').to_json()
+
+        return render(request, 'invest/content_detail.html', context)
 
 
 class DeleteContentDetailView(LoginRequiredMixin, View):
