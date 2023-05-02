@@ -41,3 +41,15 @@ function plot(x, datasets, ctx, labels={}) {
     }
     new Chart(ctx, config)
 }
+
+function djangoQuerysetDeserializer(json, xField, yField) {
+    const contextObj = JSON.parse(json)
+    let x = []
+    let y = []
+    for (i in contextObj) {
+        let fieldsObj = contextObj[i].fields
+        x.push(fieldsObj[xField])
+        y.push(fieldsObj[yField])
+    }
+    return [x, y]
+}

@@ -2,6 +2,7 @@ import json
 import pandas as pd
 
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core import serializers
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
@@ -51,7 +52,7 @@ class HomeView(LoginRequiredMixin, View):
             }
 
         context = {
-            'last_updated': wallet.dt_updated.strftime('%d/%m/%Y'),
+            'last_updated': wallet.dt_updated,
             'market_agg_table': market_agg,
             'group_agg': group_agg,
             'group_plot': json.dumps(group_plot)
@@ -106,32 +107,28 @@ class ContentDetailView(LoginRequiredMixin, View):
         if request.user != content.user:
             return HttpResponseRedirect(reverse('invest:content_list'))
 
-        content_data = {
-            'quantity': content.quantity,
-            'cost': content.cost,
-            'price': content.price,
-            'value': content.value,
-            'currency_symbol': content.asset.market.symbol
-        }
-        context = {
-            'content_id': content_id,
-            'content': content,
-            'asset_name': content.asset.name,
-            'description': content.asset.description,
-            'currency_symbol': content.asset.market.symbol,
-            'form': ContentDetailForm(content_data),
-        }
+        content.cm = content.cost/content.quantity
+        content.value = content.quantity*content.price
 
-        qs = Dividend.objects.filter(
+        dividend = Dividend.objects.filter(
             user=request.user,
             asset=content.asset,
             bank=content.bank
         ).order_by('-date')
-        if qs.exists():
-            dividend = qs_to_df(qs, 'date', 'value')
-            dividend['date'] = dividend['date'].apply(lambda x: x.isoformat())
-            context['table_dividend'] = qs
-            context['plot_data'] = dividend.sort_values('date').to_json()
+        dividend_json = serializers.serialize(
+            'json',
+            dividend.order_by('date'),
+            fields=('date', 'value')
+        )
+
+        context = {
+            'content': content,
+            'asset_name': content.asset.name,
+            'description': content.asset.description,
+            'currency_symbol': content.asset.market.symbol,
+            'dividend': dividend,
+            'dividend_json': dividend_json
+        }
 
         return render(request, 'invest/content_detail.html', context)
 

@@ -96,7 +96,7 @@ class Wallet(models.Model):
         )
 
     def __str__(self):
-        return self.user.email + ' | ' + self.dt_updated.strftime('%Y-%m-%d')
+        return self.user.email + ' | ' + self.dt_updated.strftime('%Y-%m-%d %H:%M:%S %Z')
 
 
 class Content(models.Model):

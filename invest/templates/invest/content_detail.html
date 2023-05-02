@@ -9,42 +9,25 @@
 <h1 class="border-bottom">{{ asset_name }}</h1>
 <p>{{ description }}</p>
 
-<form action="" method="post">
-    {% csrf_token %}
-    <div class="mb-3">
-        <label class="form-label" for="quantity-input">Quantidade</label>
-        <input class="form-control" type="text" name="quantity" id="quantity-input" value="{{ form.quantity.value }}">
-    </div>
-    <div class="mb-3">
-        <label class="form-label" for="price-input">Cotação</label>
-        <div class="input-group">
-            <span class="input-group-text">{{ content.asset.market.symbol }}</span>
-            <input class="form-control" type="text" name="price" id="price-input" value="{{ form.price.value }}">
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-6">
+            <canvas id="value-chart" width="400" height="200"></canvas>
+        </div>
+        <div class="col-md-6">
+            <p>Quantidade: {{ content.quantity }}</p>
+            <p>Custo: {{ content.cost|currency:currency_symbol }}</p>
+            <p>Valor: {{ content.value|currency:currency_symbol }}</p>
+            <p>Custo médio: {{ content.cm|currency:currency_symbol }}</p>
+            <p>Cotação: {{ content.price|currency:currency_symbol }}</p>
         </div>
     </div>
-    <div class="mb-3">
-        <label class="form-label" for="cost-input">Custo</label>
-        <div class="input-group">
-            <span class="input-group-text">{{ content.asset.market.symbol }}</span>
-            <input class="form-control" type="text" name="cost" id="cost-input" value="{{ form.cost.value }}">
-        </div>
-    </div>
-    <div class="mb-3">
-        <label class="form-label" for="value-input">Valor</label>
-        <div class="input-group">
-            <span class="input-group-text">{{ content.asset.market.symbol }}</span>
-            <input class="form-control" type="text" name="value" id="value-input" value="{{ form.value.value }}">
-        </div>
-    </div>
-    <input type="submit" class="btn btn-primary" value="Salvar">
-    <a href="{% url 'invest:delete_content' content_id %}" class="btn btn-danger">Excluir</a>
-    <a href="{% url 'invest:content_list' %}" class="btn btn-outline-secondary">Cancelar</a>
-</form>
+</div>
 
 <div class="container-fluid">
     <div class="row">
         <div class="col-md-6">
-            <canvas id="chart-dividend" width="400" height="200"></canvas>
+            <canvas id="dividend-chart" width="400" height="200"></canvas>
         </div>
         <div class="col-md-6 table-responsive table-fix-head">
             <table class="table table-striped">
@@ -54,13 +37,13 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% if table_dividend %}
-                        {% for row in table_dividend %}
+                    {% if dividend %}
+                        {% for row in dividend %}
                             <tr>
                                 <td>{{ row.date }}</td>
-                                <td></td>
-                                <td>{{ row.value|currency:row.asset.market.symbol }}</td>
-                                <td></td>
+                                <td>-</td>
+                                <td>{{ row.value|currency:currency_symbol }}</td>
+                                <td>-</td>
                             </tr>
                         {% endfor %}
                     {% endif %}
@@ -71,12 +54,13 @@
 </div>
 
 <script>
-    if ('{{ plot_data }}') {
-        var data = JSON.parse('{{ plot_data|escapejs }}')
+    if ('{{ dividend_json }}') {
+        const [x, y] = djangoQuerysetDeserializer(
+            '{{ dividend_json|escapejs }}', 'date', 'value'
+        )
+        var datasets = [{data: y}]
+        var ctx = document.getElementById('dividend-chart')
         var ylabel = '{{ currency_symbol|escapejs }}'
-        var ctx = document.getElementById('chart-dividend')
-        var x = Object.values(data.date)
-        var datasets = [{data: Object.values(data.value)}]
         plot(x, datasets, ctx, {ylabel: ylabel})
     }
 </script>
