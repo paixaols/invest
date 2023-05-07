@@ -10,7 +10,7 @@
 
 <!-- Info -->
 <div class="mb-3">
-    <p>{{ number_of_assets }} investimentos na sua carteira.</p>
+    <p><span id="content-count">{{ number_of_assets }}</span> investimentos na sua carteira.</p>
     <p>Última atualização em {{ date }}.</p>
 </div>
 
@@ -99,6 +99,8 @@
                 el.style.display = "none"
             }
         })
+        var count = document.querySelectorAll(".card[style='display: block;']").length
+        document.getElementById("content-count").innerText = count
     }
     document.getElementById("market_selector").addEventListener("change", filterCards)
     document.getElementById("type_selector").addEventListener("change", filterCards)
