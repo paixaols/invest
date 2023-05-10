@@ -2,7 +2,8 @@ from django.test import TestCase
 from django.utils import timezone
 
 from .models import (
-    Asset, AssetGroup, AssetType, Content, GroupAgg, Market, MarketAgg, Wallet
+    Asset, AssetGroup, AssetType, Bank, Content, GroupAgg, Market, MarketAgg,
+    Wallet
 )
 from cadastro.models import User
 
@@ -20,11 +21,12 @@ class ContentModelTests(TestCase):
             name='TEST', type=self.asset_type, group=self.asset_group, market=self.market
         )
         self.wallet = Wallet.objects.create(user=self.user, dt_created=timezone.now())
+        self.bank = Bank.objects.create(name='Banco da Esquina', market=self.market)
 
     def test_save_method_on_content_creation(self):
         '''O método save do modelo Content deve calcular o valor.'''
         c = Content.objects.create(
-            wallet=self.wallet, user=self.user, asset=self.asset,
+            wallet=self.wallet, user=self.user, asset=self.asset, bank=self.bank,
             quantity=2, price=3, cost=3
         )
         self.assertEqual(c.quantity, 2)
@@ -34,7 +36,7 @@ class ContentModelTests(TestCase):
     def test_save_method_on_content_update(self):
         '''O método save do modelo Content deve calcular o valor.'''
         c = Content.objects.create(
-            wallet=self.wallet, user=self.user, asset=self.asset,
+            wallet=self.wallet, user=self.user, asset=self.asset, bank=self.bank,
             quantity=2, price=3, cost=3
         )
         self.assertEqual(c.quantity, 2)
@@ -76,13 +78,15 @@ class ContentAggregationSignalTests(TestCase):
             name='Asset group Y', type=self.asset_type, group=self.group_y, market=self.market_a
         )
         self.wallet = Wallet.objects.create(user=self.user, dt_created=timezone.now())
+        self.bank_a = Bank.objects.create(name='Banco da Esquina', market=self.market_a)
+        self.bank_b = Bank.objects.create(name='Banco da Esquina', market=self.market_b)
 
     def test_market_aggregation_on_content_post_save(self):
         agg_exists = MarketAgg.objects.filter(wallet=self.wallet).exists()
         self.assertIs(agg_exists, False)
 
         c = Content.objects.create(
-            wallet=self.wallet, user=self.user, asset=self.asset_1,
+            wallet=self.wallet, user=self.user, asset=self.asset_1, bank=self.bank_a,
             quantity=2, price=3, cost=3
         )
 
@@ -94,11 +98,11 @@ class ContentAggregationSignalTests(TestCase):
         self.assertIs(agg_exists, False)
 
         c1 = Content.objects.create(
-            wallet=self.wallet, user=self.user, asset=self.asset_1,
+            wallet=self.wallet, user=self.user, asset=self.asset_1, bank=self.bank_a,
             quantity=2, price=3, cost=3
         )
         c2 = Content.objects.create(
-            wallet=self.wallet, user=self.user, asset=self.asset_2,
+            wallet=self.wallet, user=self.user, asset=self.asset_2, bank=self.bank_b,
             quantity=2, price=3, cost=3
         )
 
@@ -113,14 +117,12 @@ class ContentAggregationSignalTests(TestCase):
         agg_exists = MarketAgg.objects.filter(wallet=self.wallet).exists()
         self.assertEqual(agg_exists, False)
 
-
-
     def test_group_aggregation_on_content_post_save(self):
         agg_exists = GroupAgg.objects.filter(wallet=self.wallet).exists()
         self.assertIs(agg_exists, False)
 
         c = Content.objects.create(
-            wallet=self.wallet, user=self.user, asset=self.asset_3,
+            wallet=self.wallet, user=self.user, asset=self.asset_3, bank=self.bank_a,
             quantity=2, price=3, cost=3
         )
 
@@ -132,11 +134,11 @@ class ContentAggregationSignalTests(TestCase):
         self.assertIs(agg_exists, False)
 
         c1 = Content.objects.create(
-            wallet=self.wallet, user=self.user, asset=self.asset_3,
+            wallet=self.wallet, user=self.user, asset=self.asset_3, bank=self.bank_a,
             quantity=2, price=3, cost=3
         )
         c2 = Content.objects.create(
-            wallet=self.wallet, user=self.user, asset=self.asset_4,
+            wallet=self.wallet, user=self.user, asset=self.asset_4, bank=self.bank_b,
             quantity=2, price=3, cost=3
         )
 
