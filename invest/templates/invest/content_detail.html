@@ -54,6 +54,16 @@
 </div>
 
 <script>
+    if ('{{ value_history_json }}') {
+        const [x, y] = djangoQuerysetDeserializer(
+            '{{ value_history_json|escapejs }}', 'dt_updated', 'value'
+        )
+        var datasets = [{data: y}]
+        var ctx = document.getElementById('value-chart')
+        var ylabel = '{{ currency_symbol|escapejs }}'
+        lineplot(x, datasets, ctx, {ylabel: ylabel}, kind='line')
+    }
+
     if ('{{ dividend_json }}') {
         const [x, y] = djangoQuerysetDeserializer(
             '{{ dividend_json|escapejs }}', 'date', 'value'
@@ -61,7 +71,7 @@
         var datasets = [{data: y}]
         var ctx = document.getElementById('dividend-chart')
         var ylabel = '{{ currency_symbol|escapejs }}'
-        plot(x, datasets, ctx, {ylabel: ylabel})
+        barplot(x, datasets, ctx, {ylabel: ylabel})
     }
 </script>
 

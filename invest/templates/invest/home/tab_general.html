@@ -73,6 +73,6 @@
         var ctx = document.getElementById('chart-market-'+market)
         var x = group_plot[market]['x']
         var datasets = [{data: group_plot[market]['y']}]
-        plot(x, datasets, ctx, {ylabel: group_plot[market]['currency_symbol']})
+        barplot(x, datasets, ctx, {ylabel: group_plot[market]['currency_symbol']})
     }
 </script>

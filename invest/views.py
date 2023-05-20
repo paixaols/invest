@@ -1,18 +1,20 @@
 import json
 import pandas as pd
 
+from datetime import timedelta
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core import serializers
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
+from django.utils import timezone
 from django.views import View
 
 from .forms import ContentDetailForm, NewContentForm
 from .models import Content, GroupAgg, MarketAgg, Wallet
 from .utils import qs_to_df
 from cadastro.models import User
-from statement.models import Dividend
+from statement.models import Dividend, Transaction
 
 
 class IndexView(View):
@@ -30,7 +32,7 @@ class HomeView(LoginRequiredMixin, View):
         try:
             wallet = Wallet.objects.filter(user_id=request.user).latest('dt_updated')
         except Wallet.DoesNotExist:
-            return render(request, 'invest/home.html', {})
+            return render(request, 'invest/home/home.html', {})
 
         market_agg = MarketAgg.objects.filter(wallet_id=wallet.id).order_by('-value')
         markets = [ agg.market for agg in market_agg ]
@@ -70,7 +72,7 @@ class ContentListView(LoginRequiredMixin, View):
             wallet = Wallet.objects.filter(user_id=request.user).latest('dt_updated')
         except Wallet.DoesNotExist:
             # TODO: Mudar esse comportamento
-            return render(request, 'invest/home.html', {})
+            return render(request, 'invest/home/home.html', {})
 
         contents = Content.objects.filter(wallet_id=wallet.id).order_by('-value')
         markets = sorted(
@@ -110,6 +112,17 @@ class ContentDetailView(LoginRequiredMixin, View):
         content.cm = content.cost/content.quantity
         content.value = content.quantity*content.price
 
+        content_history = Content.objects.filter(
+            user=request.user,
+            asset=content.asset,
+            bank=content.bank
+        )
+        value_history_json = serializers.serialize(
+            'json',
+            content_history.order_by('dt_updated'),
+            fields=('dt_updated', 'value')
+        )
+
         dividend = Dividend.objects.filter(
             user=request.user,
             asset=content.asset,
@@ -126,6 +139,7 @@ class ContentDetailView(LoginRequiredMixin, View):
             'asset_name': content.asset.name,
             'description': content.asset.description,
             'currency_symbol': content.asset.market.symbol,
+            'value_history_json': value_history_json,
             'dividend': dividend,
             'dividend_json': dividend_json
         }

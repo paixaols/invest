@@ -14,6 +14,7 @@ class Market(models.Model):
     currency = models.CharField('Moeda', max_length=10)
     code = models.CharField('Código', max_length=10)
     symbol = models.CharField('Símbolo', max_length=10)
+    yf_suffix = models.CharField('Sufixo Yahoo Finance', max_length=5, blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -108,10 +109,12 @@ class Content(models.Model):
     cost = models.FloatField('Custo')
     price = models.FloatField('Cotação')
     value = models.FloatField('Valor')
+    dt_updated = models.DateField('Data de atualização')
 
     def save(
         self, force_insert=False, force_update=False, using=None, update_fields=None
     ):
+        self.dt_updated = timezone.now()
         self.value = self.quantity*self.price
         if update_fields is not None:
             if 'quantity' in update_fields or 'price' in update_fields:
