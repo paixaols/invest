@@ -1,4 +1,5 @@
-from django.test import TestCase
+from django.test import Client, TestCase
+from django.urls import reverse
 from django.utils import timezone
 
 from .models import (
@@ -6,6 +7,7 @@ from .models import (
     Wallet
 )
 from cadastro.models import User
+from statement.models import Transaction
 
 
 # ---------------------------------------------------------------------------- #
@@ -27,7 +29,7 @@ class ContentModelTests(TestCase):
         '''O método save do modelo Content deve calcular o valor.'''
         c = Content.objects.create(
             wallet=self.wallet, user=self.user, asset=self.asset, bank=self.bank,
-            quantity=2, price=3, cost=3
+            quantity=2, price=3, cost=3, dt_updated=self.wallet.dt_created
         )
         self.assertEqual(c.quantity, 2)
         self.assertEqual(c.price, 3)
@@ -37,7 +39,7 @@ class ContentModelTests(TestCase):
         '''O método save do modelo Content deve calcular o valor.'''
         c = Content.objects.create(
             wallet=self.wallet, user=self.user, asset=self.asset, bank=self.bank,
-            quantity=2, price=3, cost=3
+            quantity=2, price=3, cost=3, dt_updated=self.wallet.dt_created
         )
         self.assertEqual(c.quantity, 2)
         self.assertEqual(c.price, 3)
@@ -87,7 +89,7 @@ class ContentAggregationSignalTests(TestCase):
 
         c = Content.objects.create(
             wallet=self.wallet, user=self.user, asset=self.asset_1, bank=self.bank_a,
-            quantity=2, price=3, cost=3
+            quantity=2, price=3, cost=3, dt_updated=self.wallet.dt_created
         )
 
         agg_exists = MarketAgg.objects.filter(wallet=self.wallet).exists()
@@ -99,11 +101,11 @@ class ContentAggregationSignalTests(TestCase):
 
         c1 = Content.objects.create(
             wallet=self.wallet, user=self.user, asset=self.asset_1, bank=self.bank_a,
-            quantity=2, price=3, cost=3
+            quantity=2, price=3, cost=3, dt_updated=self.wallet.dt_created
         )
         c2 = Content.objects.create(
             wallet=self.wallet, user=self.user, asset=self.asset_2, bank=self.bank_b,
-            quantity=2, price=3, cost=3
+            quantity=2, price=3, cost=3, dt_updated=self.wallet.dt_created
         )
 
         agg = MarketAgg.objects.filter(wallet=self.wallet)
@@ -123,7 +125,7 @@ class ContentAggregationSignalTests(TestCase):
 
         c = Content.objects.create(
             wallet=self.wallet, user=self.user, asset=self.asset_3, bank=self.bank_a,
-            quantity=2, price=3, cost=3
+            quantity=2, price=3, cost=3, dt_updated=self.wallet.dt_created
         )
 
         agg_exists = GroupAgg.objects.filter(wallet=self.wallet).exists()
@@ -135,11 +137,11 @@ class ContentAggregationSignalTests(TestCase):
 
         c1 = Content.objects.create(
             wallet=self.wallet, user=self.user, asset=self.asset_3, bank=self.bank_a,
-            quantity=2, price=3, cost=3
+            quantity=2, price=3, cost=3, dt_updated=self.wallet.dt_created
         )
         c2 = Content.objects.create(
             wallet=self.wallet, user=self.user, asset=self.asset_4, bank=self.bank_b,
-            quantity=2, price=3, cost=3
+            quantity=2, price=3, cost=3, dt_updated=self.wallet.dt_created
         )
 
         agg = GroupAgg.objects.filter(wallet=self.wallet)
@@ -152,3 +154,142 @@ class ContentAggregationSignalTests(TestCase):
         c2.delete()
         agg_exists = GroupAgg.objects.filter(wallet=self.wallet).exists()
         self.assertEqual(agg_exists, False)
+
+
+# ---------------------------------------------------------------------------- #
+# Test views
+# ---------------------------------------------------------------------------- #
+class UpdateWalletViewTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(email='test@dev.com', password='123')
+        self.asset_type = AssetType.objects.create(type='Test Type')
+        self.asset_group = AssetGroup.objects.create(group='Test Group')
+        self.market = Market.objects.create(name='Test Market')
+        self.bank = Bank.objects.create(name='Bank', market=self.market)
+        self.asset1 = Asset.objects.create(
+            name='TEST 1', type=self.asset_type, group=self.asset_group, market=self.market
+        )
+        self.asset2 = Asset.objects.create(
+            name='TEST 2', type=self.asset_type, group=self.asset_group, market=self.market
+        )
+
+        self.t_rv = AssetType.objects.create(type='Renda Variável')
+        self.g_acao = AssetGroup.objects.create(group='Ação')
+        self.g_etf = AssetGroup.objects.create(group='ETF')
+        self.m_brasil = Market.objects.create(name='Brasil', yf_suffix='.SA')
+        self.m_eua = Market.objects.create(name='EUA')
+        self.bbas3 = Asset.objects.create(
+            name='BBAS3', type=self.t_rv, group=self.g_acao, market=self.m_brasil
+        )
+        self.ivv = Asset.objects.create(
+            name='IVV', type=self.t_rv, group=self.g_etf, market=self.m_eua
+        )
+
+        self.client = Client()
+        self.client.force_login(self.user)
+
+    def test_consolidate_first_wallet(self):
+        Transaction.objects.create(
+            user=self.user, asset=self.asset1, bank = self.bank,
+            date = timezone.now(), event = 'COMPRA',
+            quantity = 1, value = 10, fee = 0,
+            currency_rate = 1,
+            pre_split = 1, post_split = 1
+        )
+
+        self.assertIs(Wallet.objects.all().exists(), False)
+        response = self.client.get(reverse('invest:update_wallet'))
+        self.assertRedirects(response, reverse('invest:home'))
+        self.assertEqual(len(Wallet.objects.all()), 1)
+
+    def test_update_existing_wallet(self):
+        # Buy asset 1
+        Transaction.objects.create(
+            user=self.user, asset=self.asset1, bank = self.bank,
+            date = timezone.now(), event = 'COMPRA',
+            quantity = 1, value = 10, fee = 0,
+            currency_rate = 1,
+            pre_split = 1, post_split = 1
+        )
+
+        self.assertIs(Wallet.objects.all().exists(), False)
+        response = self.client.get(reverse('invest:update_wallet'))
+        self.assertRedirects(response, reverse('invest:home'))
+
+        wallet = Wallet.objects.filter(user=self.user).latest('dt_created')
+        contents = Content.objects.filter(wallet=wallet)
+        self.assertEqual(contents[0].quantity, 1)
+
+        # More asset 1
+        Transaction.objects.create(
+            user=self.user, asset=self.asset1, bank = self.bank,
+            date = timezone.now(), event = 'COMPRA',
+            quantity = 1, value = 10, fee = 0,
+            currency_rate = 1,
+            pre_split = 1, post_split = 1
+        )
+
+        response = self.client.get(reverse('invest:update_wallet'))
+        self.assertRedirects(response, reverse('invest:home'))
+
+        wallet = Wallet.objects.filter(user=self.user).latest('dt_created')
+        contents = Content.objects.filter(wallet=wallet)
+        self.assertEqual(contents[0].quantity, 2)
+
+        # Buy asset 2
+        Transaction.objects.create(
+            user=self.user, asset=self.asset2, bank = self.bank,
+            date = timezone.now(), event = 'COMPRA',
+            quantity = 5, value = 50, fee = 1,
+            currency_rate = 1,
+            pre_split = 1, post_split = 1
+        )
+
+        response = self.client.get(reverse('invest:update_wallet'))
+        self.assertRedirects(response, reverse('invest:home'))
+
+        wallet = Wallet.objects.filter(user=self.user).latest('dt_created')
+        contents = Content.objects.filter(wallet=wallet)
+        self.assertEqual(len(contents), 2)
+        content = Content.objects.get(wallet=wallet, asset__name='TEST 2')
+        self.assertEqual(content.quantity, 5)
+
+        # Sell asset 1
+        Transaction.objects.create(
+            user=self.user, asset=self.asset1, bank = self.bank,
+            date = timezone.now(), event = 'VENDA',
+            quantity = 2, value = 20, fee = 0,
+            currency_rate = 1,
+            pre_split = 1, post_split = 1
+        )
+
+        response = self.client.get(reverse('invest:update_wallet'))
+        self.assertRedirects(response, reverse('invest:home'))
+
+        wallet = Wallet.objects.filter(user=self.user).latest('dt_created')
+        contents = Content.objects.filter(wallet=wallet)
+        self.assertEqual(len(contents), 1)
+        self.assertEqual(contents[0].asset.name, 'TEST 2')
+
+    def test_event_compra(self):
+        Transaction.objects.create(
+            user=self.user, asset=self.asset1, bank = self.bank,
+            date = timezone.now(), event = 'COMPRA',
+            quantity = 1, value = 10, fee = 0,
+            currency_rate = 1,
+            pre_split = 1, post_split = 1
+        )
+        Transaction.objects.create(
+            user=self.user, asset=self.asset2, bank = self.bank,
+            date = timezone.now(), event = 'COMPRA',
+            quantity = 2, value = 20, fee = 2,
+            currency_rate = 1,
+            pre_split = 1, post_split = 1
+        )
+
+        response = self.client.get(reverse('invest:update_wallet'))
+        self.assertRedirects(response, reverse('invest:home'))
+
+        wallet = Wallet.objects.filter(user=self.user).latest('dt_created')
+        contents = Content.objects.filter(wallet=wallet)
+        self.assertEqual(len(contents), 2)

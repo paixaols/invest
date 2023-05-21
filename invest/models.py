@@ -58,6 +58,8 @@ class AssetGroup(models.Model):
 
 class Asset(models.Model):
 
+    SOURCE_CHOICES = [('MANUAL', 'Manual'), ('YF', 'Yahoo Finance')]
+
     class Meta:
         verbose_name = 'Ativo'
 
@@ -67,6 +69,11 @@ class Asset(models.Model):
     type = models.ForeignKey(AssetType, on_delete=models.CASCADE)
     group = models.ForeignKey(AssetGroup, on_delete=models.CASCADE)
     expiration_date = models.DateTimeField('Vencimento', blank=True, null=True)
+    source = models.CharField(
+        'Fonte',
+        max_length=10,
+        choices=SOURCE_CHOICES
+    )
 
     def __str__(self):
         if self.expiration_date is None:
@@ -114,7 +121,6 @@ class Content(models.Model):
     def save(
         self, force_insert=False, force_update=False, using=None, update_fields=None
     ):
-        self.dt_updated = timezone.now()
         self.value = self.quantity*self.price
         if update_fields is not None:
             if 'quantity' in update_fields or 'price' in update_fields:
