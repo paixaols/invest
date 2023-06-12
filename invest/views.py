@@ -119,8 +119,10 @@ class UpdateWalletView(LoginRequiredMixin, View):
         qs = Wallet.objects.filter(user=user).order_by('-dt_created')[:1]
         now = timezone.now()
         create_new_wallet = True
+        previous_wallet_id = None
         if qs.exists():
             wallet = qs[0]
+            previous_wallet_id = wallet.id
             if wallet.dt_created.month == now.month:# Update existing wallet
                 create_new_wallet = False
                 for k in w.keys():
@@ -162,6 +164,29 @@ class UpdateWalletView(LoginRequiredMixin, View):
                 )
             # Remove assets sold
             Content.objects.filter(wallet=new_wallet, quantity=0).delete()
+
+            # Copiar caixa da carteira anterior
+            if previous_wallet_id is not None:
+                contents_in_statement = [ f'{t.asset_id}:{t.bank_id}' for t in transactions ]
+                contents = Content.objects.filter(wallet_id=previous_wallet_id)
+                contents_in_last_wallet = [ f'{c.asset_id}:{c.bank_id}' for c in contents ]
+                transfer_content = [ c for c in contents_in_last_wallet if c not in contents_in_statement ]
+                for c in transfer_content:
+                    asset_id, bank_id = c.split(':')
+                    asset_id = int(asset_id)
+                    bank_id = int(bank_id)
+                    content = contents.get(asset_id=asset_id, bank_id=bank_id)# Asset e bank definem um content unicamente dentro de uma carteira.
+                    Content.objects.create(
+                        wallet=new_wallet,
+                        user=user,
+                        asset_id=asset_id,
+                        bank_id=bank_id,
+                        quantity=content.quantity,
+                        cost=content.cost,
+                        price=content.price,
+                        dt_updated=new_wallet.dt_created
+                    )
+
         return HttpResponseRedirect(reverse('invest:home'))
 
 
@@ -192,10 +217,10 @@ class UpdateContentValueView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         user = request.user
         wallet = Wallet.objects.filter(user=user).latest('dt_created')
-        update_contents = Content.objects.filter(user=user, wallet=wallet)
+        contents2update = Content.objects.filter(user=user, wallet=wallet)
 
         # Yahoo Finance
-        contents = update_contents.filter(asset__source='YF')
+        contents = contents2update.filter(asset__source='YF')
 
         # Obter lista de ticker no formato do Yahoo Finance
         df = qs_to_df(contents, 'asset__name', 'asset__market__yf_suffix').rename(columns={

@@ -1,3 +1,4 @@
+from datetime import timedelta
 from django.test import Client, TestCase
 from django.urls import reverse
 from django.utils import timezone
@@ -187,6 +188,43 @@ class UpdateWalletViewTests(TestCase):
 
         self.client = Client()
         self.client.force_login(self.user)
+
+    def test_transfer_content_on_wallet_creation(self):
+        '''Ativos inseridos na carteira fora do extrato de transações deve ser passado adiante para carteiras novas.'''
+        # Carteira antiga com um ativo
+        date = timezone.now()-timedelta(days=60)
+        old_wallet = Wallet.objects.create(
+            user=self.user,
+            dt_created=date
+        )
+        Wallet.objects.all().update(dt_updated=date)
+        old_wallet.refresh_from_db()
+        self.assertEqual(old_wallet.dt_updated, date)
+        Content.objects.create(
+            wallet=old_wallet,
+            user=self.user,
+            asset=self.asset1,
+            bank=self.bank,
+            quantity=1,
+            cost=1,
+            price=1,
+            dt_updated=date
+        )
+
+        # Transação de outro ativo e consolidação de carteira nova
+        Transaction.objects.create(
+            user=self.user, asset=self.asset2, bank = self.bank,
+            date = timezone.now(), event = 'COMPRA',
+            quantity = 1, value = 10, fee = 0,
+            currency_rate = 1,
+            pre_split = 1, post_split = 1
+        )
+        response = self.client.get(reverse('invest:update_wallet'))
+
+        # Carteira antiga deve conter um ativo, carteira nova deve conter dois ativos
+        self.assertEqual(len(Content.objects.filter(wallet_id=1)), 1)
+        self.assertEqual(len(Content.objects.filter(wallet_id=2)), 2)
+
 
     def test_consolidate_first_wallet(self):
         Transaction.objects.create(
