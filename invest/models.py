@@ -122,7 +122,9 @@ class Content(models.Model):
         self, force_insert=False, force_update=False, using=None, update_fields=None
     ):
         self.value = self.quantity*self.price
+        self.dt_updated = timezone.now()
         if update_fields is not None:
+            update_fields = {'dt_updated'}.union(update_fields)
             if 'quantity' in update_fields or 'price' in update_fields:
                 update_fields = {'value'}.union(update_fields)
 
