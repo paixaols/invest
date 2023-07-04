@@ -61,7 +61,7 @@
         var datasets = [{data: y}]
         var ctx = document.getElementById('value-chart')
         var ylabel = '{{ currency_symbol|escapejs }}'
-        lineplot(x, datasets, ctx, {ylabel: ylabel}, kind='line')
+        lineplot(x, datasets, ctx, {ylabel: ylabel})
     }
 
     if ('{{ dividend_json }}') {

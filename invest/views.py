@@ -12,7 +12,7 @@ from django.utils import timezone
 from django.views import View
 
 from .forms import ContentDetailForm, NewContentForm
-from .models import Content, GroupAgg, MarketAgg, Wallet
+from .models import Content, GroupAgg, Market, MarketAgg, Wallet
 from .utils import qs_to_df
 from cadastro.models import User
 from statement.models import Dividend, Transaction
@@ -54,11 +54,48 @@ class HomeView(LoginRequiredMixin, View):
                 'currency_symbol': market.symbol
             }
 
+        # Evolução patrimonial
+        markets = Market.objects.all()
+        wallets = Wallet.objects.filter(user=request.user)
+
+        agg = MarketAgg.objects.filter(user=request.user)
+        df = qs_to_df(agg)
+        df_value = df.pivot(index='wallet_id',values='value',columns='market_id').reset_index()
+        df_value.fillna(0, inplace=True)
+        df_value['date'] = df_value['wallet_id'].apply(lambda x: wallets.get(pk=x).dt_updated.strftime('%Y-%m-%d'))
+
+        df['gain'] = df['value']-df['cost']
+        df_gain = df.pivot(index='wallet_id', values='gain', columns='market_id').reset_index()
+        df_gain.fillna(0, inplace=True)
+        df_gain['date'] = df_gain['wallet_id'].apply(lambda x: wallets.get(pk=x).dt_updated.strftime('%Y-%m-%d'))
+
+        history_plot = {
+            'date': df_value['date'].to_list(),
+            'datasets': []
+        }
+        gain_plot = {
+            'date': df_value['date'].to_list(),
+            'datasets': []
+        }
+        for mkt_id in df['market_id'].unique():
+            market = markets.get(pk=mkt_id).name
+            currency = markets.get(pk=mkt_id).symbol
+            history_plot['datasets'].append({
+                'data': df_value[mkt_id].to_list(),
+                'label': currency
+            })
+            gain_plot['datasets'].append({
+                'data': df_gain[mkt_id].to_list(),
+                'label': currency
+            })
+
         context = {
             'last_updated': wallet.dt_updated,
             'market_agg_table': market_agg,
             'group_agg': group_agg,
-            'group_plot': json.dumps(group_plot)
+            'group_plot': json.dumps(group_plot),
+            'history_plot': json.dumps(history_plot),
+            'gain_plot': json.dumps(gain_plot)
         }
 
         return render(request, 'invest/home/home.html', context)

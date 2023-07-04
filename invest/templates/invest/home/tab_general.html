@@ -65,14 +65,31 @@
 
 <!-- Evolução patrimonial -->
 <h2 class="border-bottom">Evolução patrimonial</h2>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-6">
+            <canvas id="history-chart" width="400" height="200"></canvas>
+        </div>
+        <div class="col-md-6">
+            <canvas id="gain-chart" width="400" height="200"></canvas>
+        </div>
+    </div>
+</div>
 
 <script>
     var group_plot = JSON.parse('{{ group_plot|escapejs }}')
-
     for(market in group_plot){
         var ctx = document.getElementById('chart-market-'+market)
         var x = group_plot[market]['x']
         var datasets = [{data: group_plot[market]['y']}]
         barplot(x, datasets, ctx, {ylabel: group_plot[market]['currency_symbol']})
     }
+
+    var history_plot = JSON.parse('{{ history_plot|escapejs }}')
+    var ctx = document.getElementById('history-chart')
+    lineplot(history_plot['date'], history_plot['datasets'], ctx, labels={title:'Valor'})
+
+    var gain_plot = JSON.parse('{{ gain_plot|escapejs }}')
+    var ctx = document.getElementById('gain-chart')
+    lineplot(gain_plot['date'], gain_plot['datasets'], ctx, labels={title:'Ganho'})
 </script>
