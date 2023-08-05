@@ -1,4 +1,4 @@
-const baseApiURL = 'http://127.0.0.1:8000/api/'
+// const baseApiURL = 'http://127.0.0.1:8000/api/'
 
 function makeRequest(method, url, data=undefined, callback=undefined) {
     let xhr = new XMLHttpRequest()
