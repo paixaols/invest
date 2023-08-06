@@ -11,4 +11,6 @@ urlpatterns = [
     path('investimentos/', views.ContentListView.as_view(), name='content_list'),
     path('investimentos/detail/<int:content_id>/', views.ContentDetailView.as_view(), name='content_detail'),
     path('investimentos/delete-content/<int:content_id>/', views.DeleteContentDetailView.as_view(), name='delete_content'),
+    path('dividendos', views.DividendListView.as_view(), name='dividend_list'),
+    path('dividendos/detail/<int:pk>/', views.DividendDetailView.as_view(), name='dividend_detail'),
 ]

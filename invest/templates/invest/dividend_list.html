@@ -1,0 +1,46 @@
+{% extends 'invest/base_logged.html' %}
+
+
+{% load numberformat %}
+
+
+{% block logged_content %}
+
+<h1 class="border-bottom">Meus dividendos</h1>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-6 table-responsive table-fix-head" style="max-height: 400px;">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Local</th><th>Dividendo</th><th>DY</th><th>YoC</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for market in market_agg %}
+                    <tr>
+                        <td>{{ market.market }}</td>
+                        <td>{{ market.dividend|currency:market.currency }}</td>
+                        <td>{{ market.dy|number:2 }}%</td>
+                        <td>{{ market.yoc|number:2 }}%</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div>
+    <ul>
+        {% for dividend in dividend_list %}
+        <li>
+            <a href="{% url 'invest:dividend_detail' dividend.id %}">&#128712;</a>
+            {{ dividend.date }} {{ dividend.asset }} {{ dividend.bank }} {{ dividend.value|currency:dividend.asset.market.symbol }}
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+
+{% endblock %}

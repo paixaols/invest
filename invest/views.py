@@ -10,9 +10,10 @@ from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.utils import timezone
 from django.views import View
+from django.views.generic import DetailView, ListView
 
 from .forms import ContentDetailForm, NewContentForm
-from .models import Content, GroupAgg, Market, MarketAgg, Wallet
+from .models import Asset, Content, GroupAgg, Market, MarketAgg, Wallet
 from .utils import qs_to_df
 from cadastro.models import User
 from statement.models import Dividend, Transaction
@@ -408,3 +409,54 @@ class DeleteContentDetailView(LoginRequiredMixin, View):
         if request.user == content.user:
             content.delete()
         return HttpResponseRedirect(reverse('invest:content_list'))
+
+
+class DividendListView(LoginRequiredMixin, ListView):
+    template_name = 'invest/dividend_list.html'
+    context_object_name = 'dividend_list'
+
+    def get_queryset(self):
+        user = self.request.user
+        try:
+            wallet = Wallet.objects.filter(user=user).latest('dt_updated')
+        except Wallet.DoesNotExist:
+            return []
+        queryset = Dividend.objects.filter(wallet=wallet).order_by('-date')
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        user = self.request.user
+        try:
+            wallet = Wallet.objects.filter(user=user).latest('dt_updated')
+        except Wallet.DoesNotExist:
+            return context
+        content_qs = Content.objects.filter(wallet=wallet)
+        content = qs_to_df(content_qs)
+
+        asset_ids = content_qs.values_list('asset_id', flat=True).distinct()
+        asset_qs = Asset.objects.filter(pk__in=asset_ids)
+        assets = qs_to_df(asset_qs, 'id', 'market__symbol', 'market__name').rename(columns={'id': 'asset_id'})
+
+        content = content.merge(assets, how='left', on='asset_id')
+        content = content[['market__name', 'cost', 'value']].groupby('market__name').sum().reset_index()
+
+        dividend_qs = Dividend.objects.filter(wallet=wallet)
+        dividend = qs_to_df(dividend_qs)
+        dividend = dividend.merge(assets, how='left', on='asset_id')
+        dividend = dividend[['market__name', 'market__symbol', 'value']].groupby(['market__name', 'market__symbol']).sum().reset_index()
+
+        dividend = dividend.merge(content, how='left', on='market__name')
+        dividend.columns = ['market', 'currency', 'dividend', 'cost', 'value']
+        dividend['dy'] = 100*dividend['dividend']/dividend['value']
+        dividend['yoc'] = 100*dividend['dividend']/dividend['cost']
+        dividend.sort_values('value', ascending=False, inplace=True)
+
+        context['market_agg'] = dividend.to_dict(orient='records')
+        return context
+
+
+class DividendDetailView(DetailView):
+    model = Dividend
+    template_name = 'invest/dividend_detail.html'

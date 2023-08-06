@@ -1,0 +1,20 @@
+{% extends 'invest/base_logged.html' %}
+
+
+{% load numberformat %}
+
+
+{% block logged_content %}
+
+<h1 class="border-bottom">Dividendos de {{ dividend.asset.name }}</h1>
+<p>{{ dividend.asset.description }}</p>
+
+<div>
+    <ul>
+        <li>Data do pagamento: {{ dividend.date }}</li>
+        <li>Valor: {{ dividend.value|currency:dividend.asset.market.symbol }}</li>
+        <li>Recebido em: {{ dividend.bank.name }}</li>
+    </ul>
+</div>
+
+{% endblock %}
