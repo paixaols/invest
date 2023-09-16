@@ -1,4 +1,10 @@
+# Project misc files
 migrations/
+notebooks/
+py-yfinance/
+static/
+TODO.txt
+web.config
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
